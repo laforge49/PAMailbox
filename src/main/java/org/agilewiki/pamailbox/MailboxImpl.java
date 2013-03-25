@@ -219,6 +219,10 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
 
     @Override
     public Mailbox autoFlush() {
+        // TODO Benchmark if it would be faster to just add a volatile boolean
+        // flag and check it only in send(Request, Mailbox) and
+        // reply(Request, Mailbox, ResponseProcessor), because having multiple
+        // Impl of each method make their access slower.
         return new Mailbox() {
 
             @Override
@@ -237,29 +241,34 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
             }
 
             @Override
-            public void send(Request<?> request) throws Exception {
+            public void send(final Request<?> request) throws Exception {
                 MailboxImpl.this.send(request);
             }
 
             @Override
-            public void send(Request<?> request, Mailbox source) throws Exception {
+            public void send(final Request<?> request, final Mailbox source)
+                    throws Exception {
                 MailboxImpl.this.send(request, source);
                 MailboxImpl.this.flush();
             }
 
             @Override
-            public <E> void reply(Request<E> request, Mailbox source, ResponseProcessor<E> responseProcessor) throws Exception {
+            public <E> void reply(final Request<E> request,
+                    final Mailbox source,
+                    final ResponseProcessor<E> responseProcessor)
+                    throws Exception {
                 MailboxImpl.this.reply(request, source, responseProcessor);
                 MailboxImpl.this.flush();
             }
 
             @Override
-            public <E> E pend(Request<E> request) throws Exception {
+            public <E> E pend(final Request<E> request) throws Exception {
                 return MailboxImpl.this.pend(request);
             }
 
             @Override
-            public ExceptionHandler setExceptionHandler(ExceptionHandler exceptionHandler) {
+            public ExceptionHandler setExceptionHandler(
+                    final ExceptionHandler exceptionHandler) {
                 return MailboxImpl.this.setExceptionHandler(exceptionHandler);
             }
 
