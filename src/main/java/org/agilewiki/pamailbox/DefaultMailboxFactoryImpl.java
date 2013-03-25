@@ -66,6 +66,14 @@ public final class DefaultMailboxFactoryImpl implements MailboxFactory {
 
     @Override
     public Mailbox createMailbox() {
+        //todo support commandeering
+        return new MailboxImpl(this,
+                messageQueueFactory
+                        .createMessageQueue(initialLocalMessageQueueSize));
+    }
+
+    @Override
+    public Mailbox createAsyncMailbox() {
         return new MailboxImpl(this,
                 messageQueueFactory
                         .createMessageQueue(initialLocalMessageQueueSize));

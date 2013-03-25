@@ -216,4 +216,57 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     public MailboxFactory getMailboxFactory() {
         return mailboxFactory;
     }
+
+    @Override
+    public Mailbox autoFlush() {
+        return new Mailbox() {
+
+            @Override
+            public MailboxFactory getMailboxFactory() {
+                return MailboxImpl.this.getMailboxFactory();
+            }
+
+            @Override
+            public boolean isEmpty() {
+                return MailboxImpl.this.isEmpty();
+            }
+
+            @Override
+            public void flush() throws Exception {
+                MailboxImpl.this.flush();
+            }
+
+            @Override
+            public void send(Request<?> request) throws Exception {
+                MailboxImpl.this.send(request);
+            }
+
+            @Override
+            public void send(Request<?> request, Mailbox source) throws Exception {
+                MailboxImpl.this.send(request, source);
+                MailboxImpl.this.flush();
+            }
+
+            @Override
+            public <E> void reply(Request<E> request, Mailbox source, ResponseProcessor<E> responseProcessor) throws Exception {
+                MailboxImpl.this.reply(request, source, responseProcessor);
+                MailboxImpl.this.flush();
+            }
+
+            @Override
+            public <E> E pend(Request<E> request) throws Exception {
+                return MailboxImpl.this.pend(request);
+            }
+
+            @Override
+            public ExceptionHandler setExceptionHandler(ExceptionHandler exceptionHandler) {
+                return MailboxImpl.this.setExceptionHandler(exceptionHandler);
+            }
+
+            @Override
+            public Mailbox autoFlush() {
+                return this;
+            }
+        };
+    }
 }
