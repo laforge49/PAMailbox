@@ -17,6 +17,7 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     private final MailboxFactory mailboxFactory;
     private final MessageQueue inbox;
     private final AtomicBoolean running = new AtomicBoolean();
+    private boolean noBuffering; //todo: disable buffering when true
 
     private ExceptionHandler exceptionHandler;
     private Message currentMessage;
@@ -26,6 +27,11 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
             final MessageQueue messageQueue) {
         this.mailboxFactory = factory;
         this.inbox = messageQueue;
+    }
+
+    @Override
+    public void setNoBuffering() {
+        noBuffering = true;
     }
 
     @Override
@@ -225,77 +231,5 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     @Override
     public Mailbox createAsyncMailbox() {
         return mailboxFactory.createAsyncMailbox();
-    }
-
-    @Override
-    public Mailbox autoFlush() {
-        // TODO Benchmark if it would be faster to just add a volatile boolean
-        // flag and check it only in send(Request, Mailbox) and
-        // reply(Request, Mailbox, ResponseProcessor), because having multiple
-        // Impl of each method make their access slower.
-        return new Mailbox() {
-
-            @Override
-            public MailboxFactory getMailboxFactory() {
-                return MailboxImpl.this.getMailboxFactory();
-            }
-
-            @Override
-            public Mailbox createMailbox() {
-                return MailboxImpl.this.createMailbox();
-            }
-
-            @Override
-            public Mailbox createAsyncMailbox() {
-                return MailboxImpl.this.createAsyncMailbox();
-            }
-
-            @Override
-            public boolean isEmpty() {
-                return MailboxImpl.this.isEmpty();
-            }
-
-            @Override
-            public void flush() throws Exception {
-                MailboxImpl.this.flush();
-            }
-
-            @Override
-            public void send(final Request<?> request) throws Exception {
-                MailboxImpl.this.send(request);
-            }
-
-            @Override
-            public void send(final Request<?> request, final Mailbox source)
-                    throws Exception {
-                MailboxImpl.this.send(request, source);
-                MailboxImpl.this.flush();
-            }
-
-            @Override
-            public <E> void reply(final Request<E> request,
-                    final Mailbox source,
-                    final ResponseProcessor<E> responseProcessor)
-                    throws Exception {
-                MailboxImpl.this.reply(request, source, responseProcessor);
-                MailboxImpl.this.flush();
-            }
-
-            @Override
-            public <E> E pend(final Request<E> request) throws Exception {
-                return MailboxImpl.this.pend(request);
-            }
-
-            @Override
-            public ExceptionHandler setExceptionHandler(
-                    final ExceptionHandler exceptionHandler) {
-                return MailboxImpl.this.setExceptionHandler(exceptionHandler);
-            }
-
-            @Override
-            public Mailbox autoFlush() {
-                return this;
-            }
-        };
     }
 }
