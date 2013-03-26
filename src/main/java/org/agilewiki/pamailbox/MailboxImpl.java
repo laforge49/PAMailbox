@@ -218,6 +218,16 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     }
 
     @Override
+    public Mailbox createMailbox() {
+        return mailboxFactory.createMailbox();
+    }
+
+    @Override
+    public Mailbox createAsyncMailbox() {
+        return mailboxFactory.createAsyncMailbox();
+    }
+
+    @Override
     public Mailbox autoFlush() {
         // TODO Benchmark if it would be faster to just add a volatile boolean
         // flag and check it only in send(Request, Mailbox) and
@@ -228,6 +238,16 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
             @Override
             public MailboxFactory getMailboxFactory() {
                 return MailboxImpl.this.getMailboxFactory();
+            }
+
+            @Override
+            public Mailbox createMailbox() {
+                return MailboxImpl.this.createMailbox();
+            }
+
+            @Override
+            public Mailbox createAsyncMailbox() {
+                return MailboxImpl.this.createAsyncMailbox();
             }
 
             @Override
