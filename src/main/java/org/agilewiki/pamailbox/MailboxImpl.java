@@ -17,7 +17,7 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     private final MailboxFactory mailboxFactory;
     private final MessageQueue inbox;
     private final AtomicBoolean running = new AtomicBoolean();
-    private boolean noBuffering; //todo: disable buffering when true
+    private boolean commandeeringDisabled; //todo: disable commandeering when true
 
     private ExceptionHandler exceptionHandler;
     private Message currentMessage;
@@ -27,11 +27,6 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
             final MessageQueue messageQueue) {
         this.mailboxFactory = factory;
         this.inbox = messageQueue;
-    }
-
-    @Override
-    public void setNoBuffering() {
-        noBuffering = true;
     }
 
     @Override
@@ -229,7 +224,8 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     }
 
     @Override
-    public Mailbox createAsyncMailbox() {
-        return mailboxFactory.createAsyncMailbox();
+    public void disableCommandeering() {
+        commandeeringDisabled = true;
+        //todo: make it so
     }
 }
