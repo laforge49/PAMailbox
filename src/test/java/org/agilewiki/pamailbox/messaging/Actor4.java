@@ -26,9 +26,9 @@ public class Actor4 {
                     public void processResponse(final String response)
                             throws Exception {
                         System.out.println(response);
+                        responseProcessor.processResponse(null);
                     }
                 });
-                responseProcessor.processResponse(null);
             }
         };
     }

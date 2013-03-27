@@ -1,12 +1,12 @@
 package org.agilewiki.pamailbox;
 
-import java.util.ArrayDeque;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
+import org.agilewiki.pactor.Actor;
 import org.agilewiki.pactor.ExceptionHandler;
-import org.agilewiki.pactor.Request;
 import org.agilewiki.pactor.ResponseProcessor;
 import org.agilewiki.pactor._Request;
+
+import java.util.ArrayDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * A default <code>MessageQueue</code> implementation, using a
@@ -17,10 +17,14 @@ import org.agilewiki.pactor._Request;
  */
 public class DefaultMessageQueue extends ConcurrentLinkedQueue<Message>
         implements MessageQueue {
-    /** serialVersionUID */
+    /**
+     * serialVersionUID
+     */
     private static final long serialVersionUID = 1L;
 
-    /** Local queue for same-mailbox exchanges. */
+    /**
+     * Local queue for same-mailbox exchanges.
+     */
     private final ArrayDeque<Message> localQueue;
 
     /**
@@ -29,20 +33,29 @@ public class DefaultMessageQueue extends ConcurrentLinkedQueue<Message>
      */
     private boolean locaFirst;
 
-    /** Creates a DefaultMessageQueue, with the given local queue initial size. */
+    /**
+     * Creates a DefaultMessageQueue, with the given local queue initial size.
+     */
     public DefaultMessageQueue(final int initialLocalQueueSize) {
         localQueue = new ArrayDeque<Message>(INITIAL_LOCAL_QUEUE_SIZE);
     }
 
-    /** Creates a new Message instance. */
+    /**
+     * Creates a new Message instance.
+     */
     @Override
-    public Message createMessage(final MessageSource source, final Message old,
-            final _Request<?> _request, final ExceptionHandler handler,
-            final ResponseProcessor<?> rp) {
-        return new Message(source, old, _request, handler, rp);
+    public <E, A extends Actor> Message createMessage(final MessageSource source,
+                                 final A targetActor,
+                                 final Message old,
+                                 final _Request<E, A> _request,
+                                 final ExceptionHandler handler,
+                                 final ResponseProcessor<E> rp) {
+        return new Message(source, targetActor, old, _request, handler, rp);
     }
 
-    /** Is the queue empty? */
+    /**
+     * Is the queue empty?
+     */
     @Override
     public boolean isNonEmpty() {
         return !localQueue.isEmpty() || !isEmpty();
@@ -51,7 +64,7 @@ public class DefaultMessageQueue extends ConcurrentLinkedQueue<Message>
     /**
      * Inserts a new message in the queue.
      *
-     * @param msg The new message
+     * @param msg   The new message
      * @param local Should be true for same-mailbox exchanges
      */
     @Override
@@ -63,19 +76,25 @@ public class DefaultMessageQueue extends ConcurrentLinkedQueue<Message>
         }
     }
 
-    /** Returns one message from the concurrent queue, if any is available. */
+    /**
+     * Returns one message from the concurrent queue, if any is available.
+     */
     @Override
     public Message pollConcurrent() {
         return super.poll();
     }
 
-    /** Returns one message from the local queue, if any is available. */
+    /**
+     * Returns one message from the local queue, if any is available.
+     */
     @Override
     public Message pollLocal() {
         return localQueue.poll();
     }
 
-    /** Returns one message, if any is available. */
+    /**
+     * Returns one message, if any is available.
+     */
     @Override
     public Message poll() {
         Message result;

@@ -20,29 +20,12 @@ public class Test2 extends TestCase {
         mailboxFactory.close();
     }
 
-    public void testb() throws Exception {
-        final MailboxFactory mailboxFactory = new DefaultMailboxFactoryImpl();
-        final Mailbox mailbox = mailboxFactory.createMailbox();
-        final Actor1 actor1 = new Actor1(mailbox);
-        final Actor2 actor2 = new Actor2(mailbox);
-        actor2.hi2(actor1).send();
-        mailboxFactory.close();
-    }
-
     public void testc() throws Exception {
         final MailboxFactory mailboxFactory = new DefaultMailboxFactoryImpl();
         final Actor1 actor1 = new Actor1(mailboxFactory.createMailbox());
         final Actor2 actor2 = new Actor2(mailboxFactory.createMailbox());
         final String result = actor2.hi2(actor1).pend();
         assertEquals("Hello world!", result);
-        mailboxFactory.close();
-    }
-
-    public void testd() throws Exception {
-        final MailboxFactory mailboxFactory = new DefaultMailboxFactoryImpl();
-        final Actor1 actor1 = new Actor1(mailboxFactory.createMailbox());
-        final Actor2 actor2 = new Actor2(mailboxFactory.createMailbox());
-        actor2.hi2(actor1).send();
         mailboxFactory.close();
     }
 }

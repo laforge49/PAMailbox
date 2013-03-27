@@ -83,7 +83,7 @@ public final class DefaultMailboxFactoryImpl implements MailboxFactory {
             if (!isShuttingDown())
                 throw e;
             else
-                LOG.warn("Unable to process the request, possible mailbox shutdown had been called in the application");
+                LOG.warn("Unable to process the request, as mailbox shutdown had been called in the application", e);
         } catch (final Error e) {
             if (!isShuttingDown())
                 throw e;

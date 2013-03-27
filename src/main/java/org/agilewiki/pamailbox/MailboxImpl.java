@@ -39,8 +39,14 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     }
 
     @Override
-    public void send(final _Request<?> request) throws Exception {
-        final Message message = inbox.createMessage(null, null, request, null,
+    public <A extends Actor> void send(final _Request<Void, A> request, final A targetActor)
+            throws Exception {
+        final Message message = inbox.createMessage(
+                null,
+                targetActor,
+                null,
+                request,
+                null,
                 EventResponseProcessor.SINGLETON);
         addMessage(message, this == message.getMessageSource());
     }
@@ -49,33 +55,54 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
      * Same as send(Request) until buffered message are implemented.
      */
     @Override
-    public void send(final _Request<?> request, final Mailbox source)
+    public <A extends Actor> void send(
+            final _Request<Void, A> request,
+            final Mailbox source,
+            final A targetActor)
             throws Exception {
         //todo Buffer events the same way reply buffers requests.
-        final Message message = inbox.createMessage(null, null, request, null,
+        final Message message = inbox.createMessage(
+                null,
+                targetActor,
+                null,
+                request,
+                null,
                 EventResponseProcessor.SINGLETON);
         addMessage(message, this == message.getMessageSource());
     }
 
     @Override
-    public <E> void reply(final _Request<E> request, final Mailbox source,
+    public <E, A extends Actor> void reply(
+            final _Request<E, A> request,
+            final Mailbox source,
+            final A targetActor,
             final ResponseProcessor<E> responseProcessor) throws Exception {
         final MailboxImpl sourceMailbox = (MailboxImpl) source;
         if (!sourceMailbox.running.get())
             throw new IllegalStateException(
                     "A valid source mailbox can not be idle");
-        final Message message = inbox.createMessage(sourceMailbox,
-                sourceMailbox.currentMessage, request,
-                sourceMailbox.exceptionHandler, responseProcessor);
+        final Message message = inbox.createMessage(
+                sourceMailbox,
+                targetActor,
+                sourceMailbox.currentMessage,
+                request,
+                sourceMailbox.exceptionHandler,
+                responseProcessor);
         addMessage(message, this == message.getMessageSource());
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <E> E pend(final _Request<E> request) throws Exception {
+    public <E, A extends Actor> E pend(final _Request<E, A> request, A targetActor)
+            throws Exception {
         final Pender pender = new Pender();
-        final Message message = inbox.createMessage(pender, null, request,
-                null, DummyResponseProcessor.SINGLETON);
+        final Message message = inbox.createMessage(
+                pender,
+                targetActor,
+                null,
+                request,
+                null,
+                (ResponseProcessor<E>) DummyResponseProcessor.SINGLETON);
         addMessage(message, this == message.getMessageSource());
         return (E) pender.pend();
     }
@@ -127,9 +154,9 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     private void processRequestMessage(final Message message) {
         exceptionHandler = null; //NOPMD
         currentMessage = message;
-        final _Request<?> request = message.getRequest();
+        final _Request<?, Actor> request = message.getRequest();
         try {
-            request.processRequest(new ResponseProcessor() {
+            request.processRequest(message.getTargetActor(), new ResponseProcessor() {
                 @Override
                 public void processResponse(final Object response)
                         throws Exception {
