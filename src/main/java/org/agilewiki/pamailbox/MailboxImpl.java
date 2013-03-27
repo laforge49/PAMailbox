@@ -2,11 +2,7 @@ package org.agilewiki.pamailbox;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.agilewiki.pactor.ExceptionHandler;
-import org.agilewiki.pactor.Mailbox;
-import org.agilewiki.pactor.MailboxFactory;
-import org.agilewiki.pactor.Request;
-import org.agilewiki.pactor.ResponseProcessor;
+import org.agilewiki.pactor.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +39,7 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     }
 
     @Override
-    public void send(final Request<?> request) throws Exception {
+    public void send(final _Request<?> request) throws Exception {
         final Message message = inbox.createMessage(null, null, request, null,
                 EventResponseProcessor.SINGLETON);
         addMessage(message, this == message.getMessageSource());
@@ -53,7 +49,7 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
      * Same as send(Request) until buffered message are implemented.
      */
     @Override
-    public void send(final Request<?> request, final Mailbox source)
+    public void send(final _Request<?> request, final Mailbox source)
             throws Exception {
         //todo Buffer events the same way reply buffers requests.
         final Message message = inbox.createMessage(null, null, request, null,
@@ -62,7 +58,7 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     }
 
     @Override
-    public <E> void reply(final Request<E> request, final Mailbox source,
+    public <E> void reply(final _Request<E> request, final Mailbox source,
             final ResponseProcessor<E> responseProcessor) throws Exception {
         final MailboxImpl sourceMailbox = (MailboxImpl) source;
         if (!sourceMailbox.running.get())
@@ -76,7 +72,7 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <E> E pend(final Request<E> request) throws Exception {
+    public <E> E pend(final _Request<E> request) throws Exception {
         final Pender pender = new Pender();
         final Message message = inbox.createMessage(pender, null, request,
                 null, DummyResponseProcessor.SINGLETON);
@@ -131,7 +127,7 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     private void processRequestMessage(final Message message) {
         exceptionHandler = null; //NOPMD
         currentMessage = message;
-        final Request<?> request = message.getRequest();
+        final _Request<?> request = message.getRequest();
         try {
             request.processRequest(new ResponseProcessor() {
                 @Override

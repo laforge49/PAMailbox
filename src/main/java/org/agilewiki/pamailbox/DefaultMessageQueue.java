@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.agilewiki.pactor.ExceptionHandler;
 import org.agilewiki.pactor.Request;
 import org.agilewiki.pactor.ResponseProcessor;
+import org.agilewiki.pactor._Request;
 
 /**
  * A default <code>MessageQueue</code> implementation, using a
@@ -36,7 +37,7 @@ public class DefaultMessageQueue extends ConcurrentLinkedQueue<Message>
     /** Creates a new Message instance. */
     @Override
     public Message createMessage(final MessageSource source, final Message old,
-            final Request<?> _request, final ExceptionHandler handler,
+            final _Request<?> _request, final ExceptionHandler handler,
             final ResponseProcessor<?> rp) {
         return new Message(source, old, _request, handler, rp);
     }
@@ -50,7 +51,7 @@ public class DefaultMessageQueue extends ConcurrentLinkedQueue<Message>
     /**
      * Inserts a new message in the queue.
      *
-     * @param e The new message
+     * @param msg The new message
      * @param local Should be true for same-mailbox exchanges
      */
     @Override

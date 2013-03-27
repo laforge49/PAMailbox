@@ -3,6 +3,7 @@ package org.agilewiki.pamailbox;
 import org.agilewiki.pactor.ExceptionHandler;
 import org.agilewiki.pactor.Request;
 import org.agilewiki.pactor.ResponseProcessor;
+import org.agilewiki.pactor._Request;
 
 /**
  * <p>
@@ -18,7 +19,7 @@ import org.agilewiki.pactor.ResponseProcessor;
 public class Message {
     private final MessageSource messageSource;
     private final Message oldMessage;
-    private final Request<?> request;
+    private final _Request<?> request;
     private final ExceptionHandler sourceExceptionHandler;
     private final ResponseProcessor<?> responseProcessor;
     private boolean responsePending = true;
@@ -63,7 +64,7 @@ public class Message {
     /**
      * @return the request
      */
-    public Request<?> getRequest() {
+    public _Request<?> getRequest() {
         return request;
     }
 
@@ -83,7 +84,7 @@ public class Message {
 
     public Message(final MessageSource source,
                    final Message old,
-                   final Request<?> _request,
+                   final _Request<?> _request,
                    final ExceptionHandler handler,
                    final ResponseProcessor<?> rp) {
         messageSource = source;
