@@ -20,8 +20,12 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     private Message currentMessage;
 
     /** messageQueue can be null to use the default queue implementation. */
-    public MailboxImpl(final MailboxFactory factory,
-            final MessageQueue messageQueue) {
+    public MailboxImpl(final boolean _disableCommandeering,
+                       final boolean _disableMessageBuffering,
+                       final MailboxFactory factory,
+                       final MessageQueue messageQueue) {
+        commandeeringDisabled = _disableCommandeering;
+        messageBufferingDisabled = _disableMessageBuffering;
         this.mailboxFactory = factory;
         this.inbox = messageQueue;
     }
@@ -248,14 +252,13 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     }
 
     @Override
-    public void disableCommandeering() {
-        commandeeringDisabled = true;
-        //todo: make it so
+    public Mailbox createMailbox(final boolean _disableCommandeering) {
+        return mailboxFactory.createMailbox(_disableCommandeering);
     }
 
     @Override
-    public void disableMessageBuffering() {
-        messageBufferingDisabled = true;
-        //todo: make it so
+    public Mailbox createMailbox(final boolean _disableCommandeering,
+                                 final boolean _disableMessageBuffering) {
+        return mailboxFactory.createMailbox(_disableCommandeering, _disableMessageBuffering);
     }
 }

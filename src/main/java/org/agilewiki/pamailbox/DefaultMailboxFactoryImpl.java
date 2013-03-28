@@ -66,13 +66,26 @@ public final class DefaultMailboxFactoryImpl implements MailboxFactory {
 
     @Override
     public Mailbox createMailbox() {
-        return new MailboxImpl(this,
+        return createMailbox(false, false);
+    }
+
+    @Override
+    public Mailbox createMailbox(final boolean _disableCommandeering) {
+        return createMailbox(_disableCommandeering, false);
+    }
+
+    @Override
+    public Mailbox createMailbox(final boolean _disableCommandeering,
+                                 final boolean _disableMessageBuffering) {
+        return new MailboxImpl(_disableCommandeering, _disableMessageBuffering, this,
                 messageQueueFactory
                         .createMessageQueue(initialLocalMessageQueueSize));
     }
 
-    public Mailbox createMailbox(final MessageQueue messageQueue) {
-        return new MailboxImpl(this, messageQueue);
+    public Mailbox createMailbox(final boolean _disableCommandeering,
+                                 final boolean _disableMessageBuffering,
+                                 final MessageQueue messageQueue) {
+        return new MailboxImpl(_disableCommandeering, _disableMessageBuffering, this, messageQueue);
     }
 
     @Override
