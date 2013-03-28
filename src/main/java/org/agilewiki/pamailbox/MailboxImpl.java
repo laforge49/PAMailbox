@@ -14,6 +14,7 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     private final MessageQueue inbox;
     private final AtomicBoolean running = new AtomicBoolean();
     private boolean commandeeringDisabled; //todo: disable commandeering when true
+    private boolean messageBufferingDisabled; //todo: disable message buffering when true
 
     private ExceptionHandler exceptionHandler;
     private Message currentMessage;
@@ -249,6 +250,12 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     @Override
     public void disableCommandeering() {
         commandeeringDisabled = true;
+        //todo: make it so
+    }
+
+    @Override
+    public void disableMessageBuffering() {
+        messageBufferingDisabled = true;
         //todo: make it so
     }
 }
