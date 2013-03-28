@@ -11,7 +11,7 @@ import org.agilewiki.pactor._Request;
  * thread associated with the Actor's mailbox will process the Message asynchronously. Considering the
  * scenario where multiple Actors are required to do the processing e.g PActor1 ---> PActor2 ---> PActor3.
  * The initial Request is passed to the PActor1 which might further pass the ResponseProcessor to PActor2
- * and PActor2 further to PActor3. The reply method of the MailBox is used to pass ResponseProcessor across
+ * and PActor2 further to PActor3. The send method of the MailBox is used to pass ResponseProcessor across
  * PActor chain as considered in the scenario.
  * </p>
  */

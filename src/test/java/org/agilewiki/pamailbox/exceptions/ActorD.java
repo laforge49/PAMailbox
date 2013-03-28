@@ -31,7 +31,7 @@ public class ActorD {
                         responseProcessor.processResponse(throwable.toString());
                     }
                 });
-                doSomethin.reply(mailbox, new ResponseProcessor<Void>() {
+                doSomethin.send(mailbox, new ResponseProcessor<Void>() {
                     @Override
                     public void processResponse(final Void response)
                             throws Exception {

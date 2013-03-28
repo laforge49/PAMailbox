@@ -60,7 +60,7 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
             final Mailbox source,
             final A targetActor)
             throws Exception {
-        //todo Buffer events the same way reply buffers requests.
+        //todo Buffer events the same way send buffers requests.
         final Message message = inbox.createMessage(
                 null,
                 targetActor,
@@ -72,7 +72,7 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     }
 
     @Override
-    public <E, A extends Actor> void reply(
+    public <E, A extends Actor> void send(
             final _Request<E, A> request,
             final Mailbox source,
             final A targetActor,
