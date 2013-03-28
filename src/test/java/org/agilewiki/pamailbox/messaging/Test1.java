@@ -14,16 +14,8 @@ public class Test1 extends TestCase {
         final MailboxFactory mailboxFactory = new DefaultMailboxFactoryImpl();
         final Mailbox mailbox = mailboxFactory.createMailbox();
         final Actor1 actor1 = new Actor1(mailbox);
-        final String result = actor1.hi1.pend();
+        final String result = actor1.hi1.call();
         assertEquals("Hello world!", result);
-        mailboxFactory.close();
-    }
-
-    public void testb() throws Exception {
-        final MailboxFactory mailboxFactory = new DefaultMailboxFactoryImpl();
-        final Mailbox mailbox = mailboxFactory.createMailbox();
-        final Actor1 actor1 = new Actor1(mailbox);
-        actor1.hi1.send();
         mailboxFactory.close();
     }
 }

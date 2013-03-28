@@ -14,14 +14,8 @@ public class Test3 extends TestCase {
         final MailboxFactory mailboxFactory = new DefaultMailboxFactoryImpl();
         final Mailbox mailbox = mailboxFactory.createMailbox();
         final ActorC actorC = new ActorC(mailbox);
-        final String result = actorC.throwRequest.pend();
+        final String result = actorC.throwRequest.call();
         assertEquals("java.lang.SecurityException: thrown on request", result);
-    }
-
-    public void testII() throws Exception {
-        final MailboxFactory mailboxFactory = new DefaultMailboxFactoryImpl();
-        final Mailbox mailbox = mailboxFactory.createMailbox();
-        final ActorC actorC = new ActorC(mailbox);
-        actorC.throwRequest.send();
+        mailboxFactory.close();
     }
 }

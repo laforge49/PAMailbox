@@ -15,7 +15,7 @@ public class Test4 extends TestCase {
         final Mailbox mailbox = mailboxFactory.createMailbox();
         final Actor1 actor1 = new Actor1(mailbox);
         final Actor4 actor4 = new Actor4(mailbox);
-        actor4.hi4(actor1).pend();
+        actor4.hi4(actor1).call();
         mailboxFactory.close();
     }
 
@@ -23,7 +23,7 @@ public class Test4 extends TestCase {
         final MailboxFactory mailboxFactory = new DefaultMailboxFactoryImpl();
         final Actor1 actor1 = new Actor1(mailboxFactory.createMailbox());
         final Actor4 actor4 = new Actor4(mailboxFactory.createMailbox());
-        actor4.hi4(actor1).pend();
+        actor4.hi4(actor1).call();
         mailboxFactory.close();
     }
 }

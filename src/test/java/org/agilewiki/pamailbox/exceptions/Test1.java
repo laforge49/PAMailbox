@@ -15,7 +15,7 @@ public class Test1 extends TestCase {
         final Mailbox mailbox = mailboxFactory.createMailbox();
         final ActorA actorA = new ActorA(mailbox);
         try {
-            actorA.throwRequest.pend();
+            actorA.throwRequest.call();
         } catch (final SecurityException se) {
             mailboxFactory.close();
             return;
@@ -23,14 +23,4 @@ public class Test1 extends TestCase {
         throw new Exception("Security exception was not caught");
     }
 
-    /**
-     * A SecurityException should be logged.
-     */
-    public void testII() throws Exception {
-        final MailboxFactory mailboxFactory = new DefaultMailboxFactoryImpl();
-        final Mailbox mailbox = mailboxFactory.createMailbox();
-        final ActorA actorA = new ActorA(mailbox);
-        actorA.throwRequest.send();
-        mailboxFactory.close();
-    }
 }

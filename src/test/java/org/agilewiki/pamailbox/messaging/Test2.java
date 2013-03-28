@@ -15,7 +15,7 @@ public class Test2 extends TestCase {
         final Mailbox mailbox = mailboxFactory.createMailbox();
         final Actor1 actor1 = new Actor1(mailbox);
         final Actor2 actor2 = new Actor2(mailbox);
-        final String result = actor2.hi2(actor1).pend();
+        final String result = actor2.hi2(actor1).call();
         assertEquals("Hello world!", result);
         mailboxFactory.close();
     }
@@ -24,7 +24,7 @@ public class Test2 extends TestCase {
         final MailboxFactory mailboxFactory = new DefaultMailboxFactoryImpl();
         final Actor1 actor1 = new Actor1(mailboxFactory.createMailbox());
         final Actor2 actor2 = new Actor2(mailboxFactory.createMailbox());
-        final String result = actor2.hi2(actor1).pend();
+        final String result = actor2.hi2(actor1).call();
         assertEquals("Hello world!", result);
         mailboxFactory.close();
     }

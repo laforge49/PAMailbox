@@ -39,7 +39,7 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     }
 
     @Override
-    public <A extends Actor> void send(final _Request<Void, A> request, final A targetActor)
+    public <A extends Actor> void signal(final _Request<Void, A> request, final A targetActor)
             throws Exception {
         final Message message = inbox.createMessage(
                 null,
@@ -52,10 +52,10 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     }
 
     /**
-     * Same as send(Request) until buffered message are implemented.
+     * Same as signal(Request) until buffered message are implemented.
      */
     @Override
-    public <A extends Actor> void send(
+    public <A extends Actor> void signal(
             final _Request<Void, A> request,
             final Mailbox source,
             final A targetActor)
@@ -93,7 +93,7 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <E, A extends Actor> E pend(final _Request<E, A> request, A targetActor)
+    public <E, A extends Actor> E call(final _Request<E, A> request, A targetActor)
             throws Exception {
         final Pender pender = new Pender();
         final Message message = inbox.createMessage(
