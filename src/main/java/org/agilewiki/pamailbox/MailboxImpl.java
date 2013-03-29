@@ -15,6 +15,7 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     private final AtomicBoolean running = new AtomicBoolean();
     private boolean commandeeringDisabled; //todo: disable commandeering when true
     private boolean messageBufferingDisabled; //todo: disable message buffering when true
+    private boolean boundToThread;
 
     private ExceptionHandler exceptionHandler;
     private Message currentMessage;
@@ -22,10 +23,13 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     /** messageQueue can be null to use the default queue implementation. */
     public MailboxImpl(final boolean _disableCommandeering,
                        final boolean _disableMessageBuffering,
+                       final boolean _boundToThread,
                        final MailboxFactory factory,
                        final MessageQueue messageQueue) {
         commandeeringDisabled = _disableCommandeering;
         messageBufferingDisabled = _disableMessageBuffering;
+        boundToThread = _boundToThread;
+        running.set(boundToThread);
         this.mailboxFactory = factory;
         this.inbox = messageQueue;
     }
@@ -148,6 +152,19 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
                     continue;
                 }
             }
+            if (message.isResponsePending())
+                processRequestMessage(message);
+            else
+                processResponseMessage(message);
+        }
+    }
+
+    @Override
+    public void processMessages() {
+        while (true) {
+            final Message message = inbox.poll();
+            if (message == null)
+                return;
             if (message.isResponsePending())
                 processRequestMessage(message);
             else
