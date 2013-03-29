@@ -186,7 +186,7 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
                         return;
                     message.setResponse(response);
                     if (message.getResponseProcessor() != EventResponseProcessor.SINGLETON) {
-                        message.getMessageSource().incomingResponse(message);
+                        message.getMessageSource().incomingResponse(message, MailboxImpl.this);
                     } else if (response instanceof Throwable) {
                         LOG.warn("Uncaught throwable", (Throwable) response);
                     }
@@ -211,7 +211,7 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
                     if (!message.isResponsePending())
                         return;
                     currentMessage.setResponse(u);
-                    message.getMessageSource().incomingResponse(message);
+                    message.getMessageSource().incomingResponse(message, MailboxImpl.this);
                 } else {
                     LOG.error("Thrown by exception handler and uncaught "
                             + exceptionHandler.getClass().getName(), t);
@@ -222,7 +222,7 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
                 return;
             currentMessage.setResponse(t);
             if (!(message.getResponseProcessor() instanceof EventResponseProcessor))
-                message.getMessageSource().incomingResponse(message);
+                message.getMessageSource().incomingResponse(message, MailboxImpl.this);
             else {
                 LOG.warn("Uncaught throwable", t);
             }
@@ -249,10 +249,9 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     }
 
     @Override
-    public void incomingResponse(final Message message) {
+    public void incomingResponse(final Message message, final Mailbox responseSource) {
         try {
-            addMessage(message, this == message.getOldMessage()
-                    .getMessageSource());
+            addMessage(message, this == responseSource);
         } catch (final Throwable t) {
             LOG.error("unable to add response message", t);
         }

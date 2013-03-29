@@ -1,5 +1,7 @@
 package org.agilewiki.pamailbox;
 
+import org.agilewiki.pactor.Mailbox;
+
 import java.util.concurrent.Semaphore;
 
 final class Pender implements MessageSource {
@@ -16,7 +18,7 @@ final class Pender implements MessageSource {
     }
 
     @Override
-    public void incomingResponse(final Message message) {
+    public void incomingResponse(final Message message, final Mailbox responseSource) {
         this.result = message.getResponse();
         done.release();
     }
