@@ -15,7 +15,7 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     private final AtomicBoolean running = new AtomicBoolean();
     private boolean commandeeringDisabled; //todo: disable commandeering when true
     private boolean messageBufferingDisabled; //todo: disable message buffering when true
-    private boolean boundToThread;
+    private Runnable messageProcessor;
 
     private ExceptionHandler exceptionHandler;
     private Message currentMessage;
@@ -23,13 +23,13 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     /** messageQueue can be null to use the default queue implementation. */
     public MailboxImpl(final boolean _disableCommandeering,
                        final boolean _disableMessageBuffering,
-                       final boolean _boundToThread,
+                       final Runnable _messageProcessor,
                        final MailboxFactory factory,
                        final MessageQueue messageQueue) {
         commandeeringDisabled = _disableCommandeering;
         messageBufferingDisabled = _disableMessageBuffering;
-        boundToThread = _boundToThread;
-        running.set(boundToThread);
+        messageProcessor = _messageProcessor;
+        running.set(messageProcessor != null);
         this.mailboxFactory = factory;
         this.inbox = messageQueue;
     }
@@ -134,12 +134,23 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
                 mailboxFactory.submit(this);
             else
                 running.set(false);
-        }
+        } else if (messageProcessor != null)
+            messageProcessor.run();
     }
 
     @Override
     public void run() {
-        while (true) {
+        if (messageProcessor != null)
+            while (true) {
+                final Message message = inbox.poll();
+                if (message == null)
+                    return;
+                if (message.isResponsePending())
+                    processRequestMessage(message);
+                else
+                    processResponseMessage(message);
+            }
+        else while (true) {
             final Message message = inbox.poll();
             if (message == null) {
                 running.set(false);
@@ -152,19 +163,6 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
                     continue;
                 }
             }
-            if (message.isResponsePending())
-                processRequestMessage(message);
-            else
-                processResponseMessage(message);
-        }
-    }
-
-    @Override
-    public void processMessages() {
-        while (true) {
-            final Message message = inbox.poll();
-            if (message == null)
-                return;
             if (message.isResponsePending())
                 processRequestMessage(message);
             else

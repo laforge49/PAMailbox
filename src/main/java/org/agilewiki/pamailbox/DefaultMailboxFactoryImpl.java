@@ -77,14 +77,14 @@ public final class DefaultMailboxFactoryImpl implements MailboxFactory {
     @Override
     public Mailbox createMailbox(final boolean _disableCommandeering,
                                  final boolean _disableMessageBuffering) {
-        return new MailboxImpl(_disableCommandeering, _disableMessageBuffering, false, this,
+        return new MailboxImpl(_disableCommandeering, _disableMessageBuffering, null, this,
                 messageQueueFactory
                         .createMessageQueue(initialLocalMessageQueueSize));
     }
 
     @Override
-    public Mailbox createThreadBoundMailbox() {
-        return new MailboxImpl(true, true, true, this,
+    public Mailbox createThreadBoundMailbox(final Runnable _messageProcessor) {
+        return new MailboxImpl(true, true, _messageProcessor, this,
                 messageQueueFactory
                         .createMessageQueue(initialLocalMessageQueueSize));
     }
@@ -92,7 +92,7 @@ public final class DefaultMailboxFactoryImpl implements MailboxFactory {
     public Mailbox createMailbox(final boolean _disableCommandeering,
                                  final boolean _disableMessageBuffering,
                                  final MessageQueue messageQueue) {
-        return new MailboxImpl(_disableCommandeering, _disableMessageBuffering, false, this,
+        return new MailboxImpl(_disableCommandeering, _disableMessageBuffering, null, this,
                 messageQueue);
     }
 
