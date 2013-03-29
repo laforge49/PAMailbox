@@ -37,7 +37,10 @@ public class DefaultMessageQueue extends ConcurrentLinkedQueue<Message>
      * Creates a DefaultMessageQueue, with the given local queue initial size.
      */
     public DefaultMessageQueue(final int initialLocalQueueSize) {
-        localQueue = new ArrayDeque<Message>(INITIAL_LOCAL_QUEUE_SIZE);
+    	if(initialLocalQueueSize > INITIAL_LOCAL_QUEUE_SIZE)
+    		localQueue = new ArrayDeque<Message>(initialLocalQueueSize);
+    	else
+    		localQueue = new ArrayDeque<Message>(INITIAL_LOCAL_QUEUE_SIZE);
     }
 
     /**
