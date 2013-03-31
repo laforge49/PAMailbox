@@ -1,6 +1,7 @@
 package org.agilewiki.pamailbox.messaging;
 
 import junit.framework.TestCase;
+
 import org.agilewiki.pactor.Mailbox;
 import org.agilewiki.pactor.MailboxFactory;
 import org.agilewiki.pactor.ResponseProcessor;
@@ -21,14 +22,15 @@ public class ThreadBoundTest extends TestCase {
                 boundMailbox.run();
                 try {
                     mailboxFactory.close();
-                } catch (Throwable x) {}
+                } catch (final Throwable x) {
+                }
             }
         });
-        final Mailbox mailbox = mailboxFactory.createMailbox();
+        final Mailbox mailbox = mailboxFactory.createMailbox(true);
         final Actor1 actor1 = new Actor1(mailbox);
         actor1.hi1.send(boundMailbox, new ResponseProcessor<String>() {
             @Override
-            public void processResponse(String response) throws Exception {
+            public void processResponse(final String response) throws Exception {
                 System.out.println(response);
                 assertEquals("Hello world!", response);
             }

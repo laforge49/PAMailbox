@@ -19,12 +19,9 @@ public interface MessageQueue {
     /**
      * Creates a new Message instance.
      */
-    <E, A extends Actor> Message createMessage(
-            final MessageSource source,
-            final A targetActor,
-            final Message old,
-            final _Request<E, A> _request,
-            final ExceptionHandler handler,
+    <E, A extends Actor> Message createMessage(final MessageSource source,
+            final A targetActor, final Message old,
+            final _Request<E, A> _request, final ExceptionHandler handler,
             final ResponseProcessor<E> rp);
 
     /**
@@ -35,10 +32,18 @@ public interface MessageQueue {
     /**
      * Inserts a new message in the queue.
      *
-     * @param e     The new message
      * @param local Should be true for same-mailbox exchanges
+     * @param msg     The new message
      */
-    void offer(final Message e, final boolean local);
+    void offer(final boolean local, final Message msg);
+
+    /**
+     * Inserts a new message in the queue.
+     * Multi-offer assumes the messages are not local.
+     *
+     * @param msgs     The new messages
+     */
+    void offer(final Iterable<Message> msgs);
 
     /**
      * Retrieves and removes the head of this queue, or returns null if this queue is empty.

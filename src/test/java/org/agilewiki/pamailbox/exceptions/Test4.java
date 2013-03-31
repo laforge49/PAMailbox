@@ -12,7 +12,7 @@ import org.agilewiki.pamailbox.DefaultMailboxFactoryImpl;
 public class Test4 extends TestCase {
     public void testI() throws Exception {
         final MailboxFactory mailboxFactory = new DefaultMailboxFactoryImpl();
-        final Mailbox mailbox = mailboxFactory.createMailbox();
+        final Mailbox mailbox = mailboxFactory.createMailbox(true);
         final ActorD actorD = new ActorD(mailbox);
         final String result = actorD.throwRequest.call();
         assertEquals("java.lang.SecurityException: thrown on request", result);

@@ -12,7 +12,7 @@ import org.agilewiki.pamailbox.DefaultMailboxFactoryImpl;
 public class Test2 extends TestCase {
     public void testI() throws Exception {
         final MailboxFactory mailboxFactory = new DefaultMailboxFactoryImpl();
-        final Mailbox mailbox = mailboxFactory.createMailbox();
+        final Mailbox mailbox = mailboxFactory.createMailbox(true);
         final ActorA actorA = new ActorA(mailbox);
         final ActorB actorB = new ActorB(mailbox);
         try {
@@ -26,8 +26,8 @@ public class Test2 extends TestCase {
 
     public void testIII() throws Exception {
         final MailboxFactory mailboxFactory = new DefaultMailboxFactoryImpl();
-        final ActorA actorA = new ActorA(mailboxFactory.createMailbox());
-        final ActorB actorB = new ActorB(mailboxFactory.createMailbox());
+        final ActorA actorA = new ActorA(mailboxFactory.createMailbox(true));
+        final ActorB actorB = new ActorB(mailboxFactory.createMailbox(true));
         try {
             actorB.throwRequest(actorA).call();
         } catch (final SecurityException se) {
