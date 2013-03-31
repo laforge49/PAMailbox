@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
  * </p>
  */
 
-public final class DefaultMailboxFactoryImpl implements MailboxFactory {
+public final class DefaultMailboxFactoryImpl implements _MailboxFactory {
     private static final Logger LOG = LoggerFactory
             .getLogger(DefaultMailboxFactoryImpl.class);
 
@@ -96,7 +96,6 @@ public final class DefaultMailboxFactoryImpl implements MailboxFactory {
                 messageQueue);
     }
 
-    @Override
     public void submit(final Runnable task) throws Exception {
         try {
             executorService.submit(task);

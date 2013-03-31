@@ -10,7 +10,7 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
 
     private static Logger LOG = LoggerFactory.getLogger(MailboxImpl.class);
 
-    private final MailboxFactory mailboxFactory;
+    private final _MailboxFactory mailboxFactory;
     private final MessageQueue inbox;
     private final AtomicBoolean running = new AtomicBoolean();
     private boolean commandeeringDisabled; //todo: disable commandeering when true
@@ -24,7 +24,7 @@ public final class MailboxImpl implements Mailbox, Runnable, MessageSource {
     public MailboxImpl(final boolean _disableCommandeering,
                        final boolean _disableMessageBuffering,
                        final Runnable _messageProcessor,
-                       final MailboxFactory factory,
+                       final _MailboxFactory factory,
                        final MessageQueue messageQueue) {
         commandeeringDisabled = _disableCommandeering;
         messageBufferingDisabled = _disableMessageBuffering;
