@@ -100,21 +100,29 @@ public final class DefaultMailboxFactoryImpl implements _MailboxFactory {
         try {
             executorService.submit(task);
         } catch (final Exception e) {
-            if (!isShuttingDown())
+            if (!isClosing())
                 throw e;
             else
                 LOG.warn("Unable to process the request, as mailbox shutdown had been called in the application", e);
         } catch (final Error e) {
-            if (!isShuttingDown())
+            if (!isClosing())
                 throw e;
         }
     }
 
     @Override
-    public void addAutoClosable(final AutoCloseable closeable) {
-        // Not perfect synchronization, but good enough, IMO
-        if (!isShuttingDown()) {
-            closables.add(closeable);
+    public boolean addAutoClosable(final AutoCloseable closeable) {
+        if (!isClosing()) {
+            return closables.add(closeable);
+        } else {
+            throw new IllegalStateException("Shuting down ...");
+        }
+    }
+
+    @Override
+    public boolean removeAutoClosable(final AutoCloseable closeable) {
+        if (!isClosing()) {
+            return closables.remove(closeable);
         } else {
             throw new IllegalStateException("Shuting down ...");
         }
@@ -138,7 +146,7 @@ public final class DefaultMailboxFactoryImpl implements _MailboxFactory {
     }
 
     @Override
-    public boolean isShuttingDown() {
+    public boolean isClosing() {
         return shuttingDown.get();
     }
 
