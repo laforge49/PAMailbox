@@ -330,21 +330,4 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
     public final MailboxFactory getMailboxFactory() {
         return mailboxFactory;
     }
-
-    @Override
-    public final Mailbox createMailbox() {
-        return mailboxFactory.createMailbox();
-    }
-
-    @Override
-    public final Mailbox createMailbox(final boolean _disableCommandeering) {
-        return mailboxFactory.createMailbox(_disableCommandeering);
-    }
-
-    @Override
-    public final Mailbox createMailbox(final boolean _disableCommandeering,
-            final boolean _disableMessageBuffering) {
-        return mailboxFactory.createMailbox(_disableCommandeering,
-                _disableMessageBuffering);
-    }
 }
