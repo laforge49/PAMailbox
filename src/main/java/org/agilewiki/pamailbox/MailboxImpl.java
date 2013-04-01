@@ -2,7 +2,7 @@ package org.agilewiki.pamailbox;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -74,9 +74,9 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
             while (iter.hasNext()) {
                 result = true;
                 final Entry<MessageSource, List<Message>> entry = iter.next();
-                iter.remove();
                 final MessageSource target = entry.getKey();
                 final List<Message> messages = entry.getValue();
+                iter.remove();
                 target.addUnbufferedMessages(messages);
             }
         }
@@ -88,7 +88,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
             final A targetActor) throws Exception {
         final Message message = inbox.createMessage(null, targetActor, null,
                 request, null, EventResponseProcessor.SINGLETON);
-        // No source mean never local
+        // No source mean never local and no buffering.
         addMessage(null, message, false);
     }
 
@@ -102,7 +102,6 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
         if (!sourceMailbox.running.get())
             throw new IllegalStateException(
                     "A valid source mailbox can not be idle");
-        //todo Buffer events the same way send buffers requests.
         final Message message = inbox.createMessage(sourceMailbox, targetActor,
                 sourceMailbox.currentMessage, request,
                 sourceMailbox.exceptionHandler,
@@ -133,6 +132,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
                 request, null,
                 (ResponseProcessor<E>) DummyResponseProcessor.SINGLETON);
         // Using a Caller means never local
+        // TODO Should we buffer here? (We don't atm)
         // TODO what if another actor with the same mailbox is called by accident?
         // Don't we get a deadlock?
         addMessage(null, message, false);
@@ -201,7 +201,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
     public boolean buffer(final Message message, final MessageSource target) {
         List<Message> buffer;
         if (sendBuffer == null) {
-            sendBuffer = new HashMap<MessageSource, List<Message>>();
+            sendBuffer = new IdentityHashMap<MessageSource, List<Message>>();
             buffer = null;
         } else {
             buffer = sendBuffer.get(target);
@@ -354,7 +354,6 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
 //            throw new IllegalStateException(
 //                    "A valid source mailbox can not be idle");
         try {
-            // TODO Currently, we don't buffer responses
             addMessage(null, message, this == responseSource);
         } catch (final Throwable t) {
             log.error("unable to add response message", t);
