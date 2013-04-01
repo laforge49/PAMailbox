@@ -16,11 +16,10 @@ import org.agilewiki.pactor.MailboxFactory;
 import org.agilewiki.pactor.ResponseProcessor;
 import org.agilewiki.pactor._Request;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class MailboxImpl implements Mailbox, Runnable, MessageSource {
 
-    private static Logger LOG = LoggerFactory.getLogger(MailboxImpl.class);
+    private final Logger log;
 
     private final _MailboxFactory mailboxFactory;
     private final MessageQueue inbox;
@@ -42,13 +41,14 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
      */
     public MailboxImpl(final boolean _mayBlock, final Runnable _onIdle,
             final Runnable _messageProcessor, final _MailboxFactory factory,
-            final MessageQueue messageQueue) {
+            final MessageQueue messageQueue, final Logger _log) {
         commandeeringDisabled = _mayBlock;
         onIdle = _onIdle;
         messageProcessor = _messageProcessor;
         running.set(messageProcessor != null);
         this.mailboxFactory = factory;
         this.inbox = messageQueue;
+        log = _log;
     }
 
     @Override
@@ -280,7 +280,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
                                 message.getMessageSource().incomingResponse(
                                         message, MailboxImpl.this);
                             } else if (response instanceof Throwable) {
-                                LOG.warn("Uncaught throwable",
+                                log.warn("Uncaught throwable",
                                         (Throwable) response);
                             }
                         }
@@ -298,7 +298,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
             try {
                 exceptionHandler.processException(t);
             } catch (final Throwable u) {
-                LOG.error("Exception handler unable to process throwable "
+                log.error("Exception handler unable to process throwable "
                         + exceptionHandler.getClass().getName(), t);
                 if (!(message.getResponseProcessor() instanceof EventResponseProcessor)) {
                     if (!message.isResponsePending())
@@ -307,7 +307,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
                     message.getMessageSource().incomingResponse(message,
                             MailboxImpl.this);
                 } else {
-                    LOG.error("Thrown by exception handler and uncaught "
+                    log.error("Thrown by exception handler and uncaught "
                             + exceptionHandler.getClass().getName(), t);
                 }
             }
@@ -319,7 +319,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
                 message.getMessageSource().incomingResponse(message,
                         MailboxImpl.this);
             else {
-                LOG.warn("Uncaught throwable", t);
+                log.warn("Uncaught throwable", t);
             }
         }
     }
@@ -354,7 +354,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
             // TODO Currently, we don't buffer responses
             addMessage(null, message, this == responseSource);
         } catch (final Throwable t) {
-            LOG.error("unable to add response message", t);
+            log.error("unable to add response message", t);
         }
     }
 

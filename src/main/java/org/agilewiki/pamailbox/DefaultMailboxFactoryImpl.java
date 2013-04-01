@@ -20,10 +20,7 @@ import org.slf4j.LoggerFactory;
  * </p>
  */
 
-public final class DefaultMailboxFactoryImpl implements _MailboxFactory {
-    private static final Logger LOG = LoggerFactory
-            .getLogger(DefaultMailboxFactoryImpl.class);
-
+public class DefaultMailboxFactoryImpl implements _MailboxFactory {
     /**
      * The SINGLETON instance will be lazily created by the first access to it.
      * No access means no creation. Note that in a JVM with class-GC, if it
@@ -32,6 +29,10 @@ public final class DefaultMailboxFactoryImpl implements _MailboxFactory {
     private static final class LazyHolder {
         public static final MailboxFactory SINGLETON = new DefaultMailboxFactoryImpl();
     }
+
+    private final Logger mailboxLog = LoggerFactory.getLogger(Mailbox.class);
+
+    private final Logger log = LoggerFactory.getLogger(MailboxFactory.class);
 
     private final ExecutorService executorService;
     private final boolean ownsExecutorService;
@@ -65,45 +66,50 @@ public final class DefaultMailboxFactoryImpl implements _MailboxFactory {
     }
 
     @Override
-    public Mailbox createMailbox() {
+    public final Mailbox createMailbox() {
         return createMailbox(false, null);
     }
 
     @Override
-    public Mailbox createMailbox(final boolean _mayBlock) {
+    public final Mailbox createMailbox(final boolean _mayBlock) {
         return createMailbox(_mayBlock, null);
     }
 
     @Override
-    public Mailbox createMailbox(final boolean _mayBlock,
-                                 final Runnable _onIdle) {
-        return new MailboxImpl(_mayBlock, _onIdle, null, this,
+    public final Mailbox createMailbox(final boolean _mayBlock,
+            final Runnable _onIdle) {
+        return createMailbox(_mayBlock, _onIdle, null, this,
                 messageQueueFactory
-                        .createMessageQueue(initialLocalMessageQueueSize));
+                        .createMessageQueue(initialLocalMessageQueueSize),
+                mailboxLog);
     }
 
     @Override
-    public Mailbox createThreadBoundMailbox(final Runnable _messageProcessor) {
-        return new MailboxImpl(true, null, _messageProcessor, this,
+    public final Mailbox createThreadBoundMailbox(
+            final Runnable _messageProcessor) {
+        return createMailbox(true, null, _messageProcessor, this,
                 messageQueueFactory
-                        .createMessageQueue(initialLocalMessageQueueSize));
+                        .createMessageQueue(initialLocalMessageQueueSize),
+                mailboxLog);
     }
 
-    public Mailbox createMailbox(final boolean _disableCommandeering,
-                                 final Runnable _onIdle,
-                                 final MessageQueue messageQueue) {
-        return new MailboxImpl(_disableCommandeering, _onIdle, null, this,
-                messageQueue);
+    public final Mailbox createMailbox(final boolean _disableCommandeering,
+            final Runnable _onIdle, final MessageQueue messageQueue) {
+        return createMailbox(_disableCommandeering, _onIdle, null, this,
+                messageQueue, mailboxLog);
     }
 
-    public void submit(final Runnable task) throws Exception {
+    @Override
+    public final void submit(final Runnable task) throws Exception {
         try {
             executorService.submit(task);
         } catch (final Exception e) {
             if (!isClosing())
                 throw e;
             else
-                LOG.warn("Unable to process the request, as mailbox shutdown had been called in the application", e);
+                log.warn(
+                        "Unable to process the request, as mailbox shutdown had been called in the application",
+                        e);
         } catch (final Error e) {
             if (!isClosing())
                 throw e;
@@ -111,7 +117,7 @@ public final class DefaultMailboxFactoryImpl implements _MailboxFactory {
     }
 
     @Override
-    public boolean addAutoClosable(final AutoCloseable closeable) {
+    public final boolean addAutoClosable(final AutoCloseable closeable) {
         if (!isClosing()) {
             return closables.add(closeable);
         } else {
@@ -120,7 +126,7 @@ public final class DefaultMailboxFactoryImpl implements _MailboxFactory {
     }
 
     @Override
-    public boolean removeAutoClosable(final AutoCloseable closeable) {
+    public final boolean removeAutoClosable(final AutoCloseable closeable) {
         if (!isClosing()) {
             return closables.remove(closeable);
         } else {
@@ -129,7 +135,7 @@ public final class DefaultMailboxFactoryImpl implements _MailboxFactory {
     }
 
     @Override
-    public void close() throws Exception {
+    public final void close() throws Exception {
         if (shuttingDown.compareAndSet(false, true)) {
             if (ownsExecutorService) {
                 executorService.shutdownNow();
@@ -146,12 +152,24 @@ public final class DefaultMailboxFactoryImpl implements _MailboxFactory {
     }
 
     @Override
-    public boolean isClosing() {
+    public final boolean isClosing() {
         return shuttingDown.get();
     }
 
     /** Lazily creates a default MailboxFactory instance, and returns it. */
     public static MailboxFactory singleton() {
         return LazyHolder.SINGLETON;
+    }
+
+    /**
+     * Actually instantiate the Mailbox.
+     * Can be overridden, to create application-specific Mailbox instances.
+     */
+    protected Mailbox createMailbox(final boolean _mayBlock,
+            final Runnable _onIdle, final Runnable _messageProcessor,
+            final _MailboxFactory factory, final MessageQueue messageQueue,
+            final Logger _log) {
+        return new MailboxImpl(_mayBlock, _onIdle, _messageProcessor, factory,
+                messageQueue, _log);
     }
 }
