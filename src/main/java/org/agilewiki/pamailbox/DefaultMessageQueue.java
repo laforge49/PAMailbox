@@ -1,6 +1,7 @@
 package org.agilewiki.pamailbox;
 
 import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.agilewiki.pactor.Actor;
@@ -15,7 +16,7 @@ import org.agilewiki.pactor._Request;
  *
  * @author monster
  */
-public class DefaultMessageQueue extends ConcurrentLinkedQueue<Message>
+public class DefaultMessageQueue extends ConcurrentLinkedQueue<Object>
         implements MessageQueue {
     /**
      * serialVersionUID
@@ -26,12 +27,6 @@ public class DefaultMessageQueue extends ConcurrentLinkedQueue<Message>
      * Local queue for same-mailbox exchanges.
      */
     private final ArrayDeque<Message> localQueue;
-
-    /**
-     * Flag helps balance out polling on both internal queues.
-     * We don't rally care if true or false, so nor sync and no volatile.
-     */
-    private boolean locaFirst;
 
     /**
      * Creates a DefaultMessageQueue, with the given local queue initial size.
@@ -84,26 +79,10 @@ public class DefaultMessageQueue extends ConcurrentLinkedQueue<Message>
      * @param msgs   The new messages
      */
     @Override
-    public void offer(final Iterable<Message> msgs) {
-        for (final Message msg : msgs) {
-            super.offer(msg);
+    public void offer(final Collection<Message> msgs) {
+        if (!msgs.isEmpty()) {
+            super.addAll(msgs);
         }
-    }
-
-    /**
-     * Returns one message from the concurrent queue, if any is available.
-     */
-    @Override
-    public Message pollConcurrent() {
-        return super.poll();
-    }
-
-    /**
-     * Returns one message from the local queue, if any is available.
-     */
-    @Override
-    public Message pollLocal() {
-        return localQueue.poll();
     }
 
     /**
@@ -111,20 +90,18 @@ public class DefaultMessageQueue extends ConcurrentLinkedQueue<Message>
      */
     @Override
     public Message poll() {
-        Message result;
-        if (locaFirst) {
-            result = localQueue.poll();
-            if (result == null) {
-                result = super.poll();
-            }
-        } else {
-            result = super.poll();
-            if (result == null) {
+        Message result = localQueue.poll();
+        if (result == null) {
+            final Object obj = super.poll();
+            if (obj instanceof Message) {
+                result = (Message) obj;
+            } else if (obj != null) {
+                @SuppressWarnings("unchecked")
+                final Collection<Message> msgs = (Collection<Message>) obj;
+                localQueue.addAll(msgs);
                 result = localQueue.poll();
             }
         }
-        // We poll alternatively both queues, so that neither starves.
-        locaFirst = !locaFirst;
         return result;
     }
 }

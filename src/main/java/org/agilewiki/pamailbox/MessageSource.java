@@ -1,5 +1,7 @@
 package org.agilewiki.pamailbox;
 
+import java.util.Collection;
+
 import org.agilewiki.pactor.Mailbox;
 
 public interface MessageSource {
@@ -16,6 +18,6 @@ public interface MessageSource {
     boolean buffer(final Message message, final MessageSource target);
 
     /** Adds messages to the queue. */
-    void addUnbufferedMessages(final Iterable<Message> messages)
+    void addUnbufferedMessages(final Collection<Message> messages)
             throws Exception;
 }

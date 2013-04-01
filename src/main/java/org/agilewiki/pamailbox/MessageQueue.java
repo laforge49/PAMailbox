@@ -1,5 +1,7 @@
 package org.agilewiki.pamailbox;
 
+import java.util.Collection;
+
 import org.agilewiki.pactor.Actor;
 import org.agilewiki.pactor.ExceptionHandler;
 import org.agilewiki.pactor.ResponseProcessor;
@@ -43,7 +45,7 @@ public interface MessageQueue {
      *
      * @param msgs     The new messages
      */
-    void offer(final Iterable<Message> msgs);
+    void offer(final Collection<Message> msgs);
 
     /**
      * Retrieves and removes the head of this queue, or returns null if this queue is empty.
@@ -51,14 +53,4 @@ public interface MessageQueue {
      * @return the head of this queue, or null if this queue is empty
      */
     Message poll();
-
-    /**
-     * Returns one message from the concurrent queue, if any is available.
-     */
-    Message pollConcurrent();
-
-    /**
-     * Returns one message from the local queue, if any is available.
-     */
-    Message pollLocal();
 }
