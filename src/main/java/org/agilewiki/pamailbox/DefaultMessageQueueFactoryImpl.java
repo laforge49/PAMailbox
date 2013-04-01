@@ -15,7 +15,4 @@ public class DefaultMessageQueueFactoryImpl implements MessageQueueFactory {
     public MessageQueue createMessageQueue(final int initialLocalQueueSize) {
         return new DefaultMessageQueue(initialLocalQueueSize);
     }
-
-    /** Singleton instance. */
-    public static final MessageQueueFactory INSTANCE = new DefaultMessageQueueFactoryImpl();
 }

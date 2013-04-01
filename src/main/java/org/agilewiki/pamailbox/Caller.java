@@ -3,7 +3,10 @@ package org.agilewiki.pamailbox;
 import java.util.Collection;
 import java.util.concurrent.Semaphore;
 
+import org.agilewiki.pactor.Actor;
 import org.agilewiki.pactor.Mailbox;
+import org.agilewiki.pactor.ResponseProcessor;
+import org.agilewiki.pactor._Request;
 
 final class Caller implements MessageSource {
     private final Semaphore done = new Semaphore(0);
@@ -30,12 +33,21 @@ final class Caller implements MessageSource {
         return false;
     }
 
-    /* (non-Javadoc)
-     * @see org.agilewiki.pamailbox.MessageSource#addUnbufferedMessages(java.lang.Iterable)
-     */
     @Override
     public void addUnbufferedMessages(final Collection<Message> messages)
             throws Exception {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isRunning() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <E, A extends Actor> Message createMessage(final MessageQueue inbox,
+            final _Request<E, A> request, final A targetActor,
+            final ResponseProcessor<E> responseProcessor) {
         throw new UnsupportedOperationException();
     }
 }

@@ -21,15 +21,6 @@ import org.slf4j.LoggerFactory;
  */
 
 public class DefaultMailboxFactoryImpl implements _MailboxFactory {
-    /**
-     * The SINGLETON instance will be lazily created by the first access to it.
-     * No access means no creation. Note that in a JVM with class-GC, if it
-     * is not used anymore, it might eventually get GCed.
-     */
-    private static final class LazyHolder {
-        public static final MailboxFactory SINGLETON = new DefaultMailboxFactoryImpl();
-    }
-
     private final Logger mailboxLog = LoggerFactory.getLogger(Mailbox.class);
 
     private final Logger log = LoggerFactory.getLogger(MailboxFactory.class);
@@ -63,7 +54,7 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
             final int initialLocalMessageQueueSize, final int initialBufferSize) {
         this.executorService = (executorService == null) ? Executors
                 .newCachedThreadPool() : executorService;
-        this.messageQueueFactory = (messageQueueFactory == null) ? DefaultMessageQueueFactoryImpl.INSTANCE
+        this.messageQueueFactory = (messageQueueFactory == null) ? new DefaultMessageQueueFactoryImpl()
                 : messageQueueFactory;
         this.initialLocalMessageQueueSize = initialLocalMessageQueueSize;
         this.ownsExecutorService = ownsExecutorService;
@@ -179,11 +170,6 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
     @Override
     public final boolean isClosing() {
         return shuttingDown.get();
-    }
-
-    /** Lazily creates a default MailboxFactory instance, and returns it. */
-    public static MailboxFactory singleton() {
-        return LazyHolder.SINGLETON;
     }
 
     /**

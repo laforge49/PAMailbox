@@ -98,29 +98,34 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
     @Override
     public final <A extends Actor> void signal(final _Request<Void, A> request,
             final Mailbox source, final A targetActor) throws Exception {
-        final MailboxImpl sourceMailbox = (MailboxImpl) source;
-        if (!sourceMailbox.running.get())
-            throw new IllegalStateException(
-                    "A valid source mailbox can not be idle");
-        final Message message = inbox.createMessage(sourceMailbox, targetActor,
-                sourceMailbox.currentMessage, request,
-                sourceMailbox.exceptionHandler,
-                EventResponseProcessor.SINGLETON);
-        addMessage(sourceMailbox, message, this == source);
+        send(request, source, targetActor, EventResponseProcessor.SINGLETON);
     }
 
     @Override
     public final <E, A extends Actor> void send(final _Request<E, A> request,
             final Mailbox source, final A targetActor,
             final ResponseProcessor<E> responseProcessor) throws Exception {
-        final MailboxImpl sourceMailbox = (MailboxImpl) source;
-        if (!sourceMailbox.running.get())
+        final MessageSource sourceMailbox = (MessageSource) source;
+        if (!sourceMailbox.isRunning())
             throw new IllegalStateException(
                     "A valid source mailbox can not be idle");
-        final Message message = inbox.createMessage(sourceMailbox, targetActor,
-                sourceMailbox.currentMessage, request,
-                sourceMailbox.exceptionHandler, responseProcessor);
+        final Message message = sourceMailbox.createMessage(inbox, request,
+                targetActor, responseProcessor);
         addMessage(sourceMailbox, message, this == source);
+    }
+
+    /** Returns true, if this message source is currently processing messages. */
+    @Override
+    public final boolean isRunning() {
+        return running.get();
+    }
+
+    @Override
+    public final <E, A extends Actor> Message createMessage(
+            final MessageQueue inbox, final _Request<E, A> request,
+            final A targetActor, final ResponseProcessor<E> responseProcessor) {
+        return inbox.createMessage(this, targetActor, currentMessage, request,
+                exceptionHandler, responseProcessor);
     }
 
     @SuppressWarnings("unchecked")
@@ -150,7 +155,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
         return rv;
     }
 
-    private void addMessage(final MailboxImpl sourceMailbox,
+    private void addMessage(final MessageSource sourceMailbox,
             final Message message, final boolean local) throws Exception {
         // sourceMailbox is either null, or running ...
         if ((sourceMailbox == null) || local

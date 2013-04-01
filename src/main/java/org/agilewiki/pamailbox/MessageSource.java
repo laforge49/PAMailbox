@@ -2,7 +2,10 @@ package org.agilewiki.pamailbox;
 
 import java.util.Collection;
 
+import org.agilewiki.pactor.Actor;
 import org.agilewiki.pactor.Mailbox;
+import org.agilewiki.pactor.ResponseProcessor;
+import org.agilewiki.pactor._Request;
 
 public interface MessageSource {
 
@@ -20,4 +23,11 @@ public interface MessageSource {
     /** Adds messages to the queue. */
     void addUnbufferedMessages(final Collection<Message> messages)
             throws Exception;
+
+    /** Returns true, if this message source is currently processing messages. */
+    boolean isRunning();
+
+    <E, A extends Actor> Message createMessage(final MessageQueue inbox,
+            final _Request<E, A> request, final A targetActor,
+            final ResponseProcessor<E> responseProcessor);
 }
