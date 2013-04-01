@@ -70,14 +70,14 @@ public final class DefaultMailboxFactoryImpl implements _MailboxFactory {
     }
 
     @Override
-    public Mailbox createMailbox(final boolean _disableCommandeering) {
-        return createMailbox(_disableCommandeering, false);
+    public Mailbox createMailbox(final boolean _mayBlock) {
+        return createMailbox(_mayBlock, false);
     }
 
     @Override
-    public Mailbox createMailbox(final boolean _disableCommandeering,
+    public Mailbox createMailbox(final boolean _mayBlock,
                                  final boolean _disableMessageBuffering) {
-        return new MailboxImpl(_disableCommandeering, _disableMessageBuffering, null, this,
+        return new MailboxImpl(_mayBlock, _disableMessageBuffering, null, this,
                 messageQueueFactory
                         .createMessageQueue(initialLocalMessageQueueSize));
     }

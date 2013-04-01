@@ -35,11 +35,11 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
     private Message currentMessage;
 
     /** messageQueue can be null to use the default queue implementation. */
-    public MailboxImpl(final boolean _disableCommandeering,
+    public MailboxImpl(final boolean _mayBlock,
             final boolean _disableMessageBuffering,
             final Runnable _messageProcessor, final _MailboxFactory factory,
             final MessageQueue messageQueue) {
-        commandeeringDisabled = _disableCommandeering;
+        commandeeringDisabled = _mayBlock;
         messageBuffering = !_disableMessageBuffering;
         messageProcessor = _messageProcessor;
         running.set(messageProcessor != null);
