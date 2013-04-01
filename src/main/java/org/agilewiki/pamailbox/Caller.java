@@ -1,5 +1,6 @@
 package org.agilewiki.pamailbox;
 
+import java.util.Collection;
 import java.util.concurrent.Semaphore;
 
 import org.agilewiki.pactor.Mailbox;
@@ -33,7 +34,7 @@ final class Caller implements MessageSource {
      * @see org.agilewiki.pamailbox.MessageSource#addUnbufferedMessages(java.lang.Iterable)
      */
     @Override
-    public void addUnbufferedMessages(final Iterable<Message> messages)
+    public void addUnbufferedMessages(final Collection<Message> messages)
             throws Exception {
         throw new UnsupportedOperationException();
     }
