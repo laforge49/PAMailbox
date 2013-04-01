@@ -1,21 +1,12 @@
 package org.agilewiki.pamailbox;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.agilewiki.pactor.Actor;
-import org.agilewiki.pactor.ExceptionHandler;
-import org.agilewiki.pactor.Mailbox;
-import org.agilewiki.pactor.MailboxFactory;
-import org.agilewiki.pactor.ResponseProcessor;
-import org.agilewiki.pactor._Request;
+import org.agilewiki.pactor.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MailboxImpl implements Mailbox, Runnable, MessageSource {
 
@@ -28,17 +19,21 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
     private final Runnable onIdle;
     private final Runnable messageProcessor;
 
-    /** Send buffer */
+    /**
+     * Send buffer
+     */
     private Map<MessageSource, List<Message>> sendBuffer;
 
     private ExceptionHandler exceptionHandler;
     private Message currentMessage;
 
-    /** messageQueue can be null to use the default queue implementation. */
+    /**
+     * messageQueue can be null to use the default queue implementation.
+     */
     public MailboxImpl(final boolean _mayBlock,
-            final Runnable _onIdle,
-            final Runnable _messageProcessor, final _MailboxFactory factory,
-            final MessageQueue messageQueue) {
+                       final Runnable _onIdle,
+                       final Runnable _messageProcessor, final _MailboxFactory factory,
+                       final MessageQueue messageQueue) {
         commandeeringDisabled = _mayBlock;
         onIdle = _onIdle;
         messageProcessor = _messageProcessor;
@@ -54,6 +49,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
 
     /**
      * does nothing until message buffering is implemented.
+     *
      * @throws Exception
      */
     @Override
@@ -73,7 +69,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
 
     @Override
     public final <A extends Actor> void signal(final _Request<Void, A> request,
-            final A targetActor) throws Exception {
+                                               final A targetActor) throws Exception {
         final Message message = inbox.createMessage(null, targetActor, null,
                 request, null, EventResponseProcessor.SINGLETON);
         // No source mean never local
@@ -85,7 +81,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
      */
     @Override
     public final <A extends Actor> void signal(final _Request<Void, A> request,
-            final Mailbox source, final A targetActor) throws Exception {
+                                               final Mailbox source, final A targetActor) throws Exception {
         final MailboxImpl sourceMailbox = (MailboxImpl) source;
         if (!sourceMailbox.running.get())
             throw new IllegalStateException(
@@ -100,8 +96,8 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
 
     @Override
     public final <E, A extends Actor> void send(final _Request<E, A> request,
-            final Mailbox source, final A targetActor,
-            final ResponseProcessor<E> responseProcessor) throws Exception {
+                                                final Mailbox source, final A targetActor,
+                                                final ResponseProcessor<E> responseProcessor) throws Exception {
         final MailboxImpl sourceMailbox = (MailboxImpl) source;
         if (!sourceMailbox.running.get())
             throw new IllegalStateException(
@@ -115,7 +111,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
     @SuppressWarnings("unchecked")
     @Override
     public final <E, A extends Actor> E call(final _Request<E, A> request,
-            final A targetActor) throws Exception {
+                                             final A targetActor) throws Exception {
         final Caller caller = new Caller();
         final Message message = inbox.createMessage(caller, targetActor, null,
                 request, null,
@@ -139,7 +135,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
     }
 
     private void addMessage(final MailboxImpl sourceMailbox,
-            final Message message, final boolean local) throws Exception {
+                            final Message message, final boolean local) throws Exception {
         // sourceMailbox is either null, or running ...
         if ((sourceMailbox == null) || local
                 || !sourceMailbox.buffer(message, this)) {
@@ -147,14 +143,18 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
         }
     }
 
-    /** Adds a message to the queue. */
+    /**
+     * Adds a message to the queue.
+     */
     private void addUnbufferedMessage(final Message message, final boolean local)
             throws Exception {
         inbox.offer(local, message);
         afterAdd();
     }
 
-    /** Adds messages to the queue. */
+    /**
+     * Adds messages to the queue.
+     */
     @Override
     public void addUnbufferedMessages(final Iterable<Message> messages)
             throws Exception {
@@ -162,7 +162,9 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
         afterAdd();
     }
 
-    /** Should be called after adding some message(s) to the queue. */
+    /**
+     * Should be called after adding some message(s) to the queue.
+     */
     private void afterAdd() throws Exception {
         if (running.compareAndSet(false, true)) {
             if (inbox.isNonEmpty())
@@ -175,25 +177,24 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
 
     /**
      * Returns true, if the message could be buffered before sending.
+     *
      * @param message Message to send-buffer
      * @return true, if buffered
      */
     @Override
     public boolean buffer(final Message message, final MessageSource target) {
-        if (onIdle != null) {
-            List<Message> buffer;
-            if (sendBuffer == null) {
-                sendBuffer = new HashMap<MessageSource, List<Message>>();
-                buffer = null;
-            } else {
-                buffer = sendBuffer.get(target);
-            }
-            if (buffer == null) {
-                buffer = new ArrayList<Message>();
-                sendBuffer.put(target, buffer);
-            }
-            buffer.add(message);
+        List<Message> buffer;
+        if (sendBuffer == null) {
+            sendBuffer = new HashMap<MessageSource, List<Message>>();
+            buffer = null;
+        } else {
+            buffer = sendBuffer.get(target);
         }
+        if (buffer == null) {
+            buffer = new ArrayList<Message>();
+            sendBuffer.put(target, buffer);
+        }
+        buffer.add(message);
         return false;
     }
 
@@ -242,7 +243,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
         return true;
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private void processRequestMessage(final Message message) {
         exceptionHandler = null; //NOPMD
         currentMessage = message;
@@ -325,7 +326,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
 
     @Override
     public final void incomingResponse(final Message message,
-            final Mailbox responseSource) {
+                                       final Mailbox responseSource) {
 //        final MailboxImpl sourceMailbox = (MailboxImpl) responseSource;
 //        if (!sourceMailbox.running.get())
 //            throw new IllegalStateException(
