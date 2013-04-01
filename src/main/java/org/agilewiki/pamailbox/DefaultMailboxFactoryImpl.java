@@ -42,37 +42,42 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
     private final AtomicBoolean shuttingDown = new AtomicBoolean();
     /** How big should the initial local queue size be? */
     private final int initialLocalMessageQueueSize;
+    /** How big should the initial (per target Mailbox) buffer size be? */
+    private final int initialBufferSize;
 
     public DefaultMailboxFactoryImpl() {
-        this(null, true, null, MessageQueue.INITIAL_LOCAL_QUEUE_SIZE);
+        this(null, true, null, MessageQueue.INITIAL_LOCAL_QUEUE_SIZE,
+                MessageQueue.INITIAL_BUFFER_SIZE);
     }
 
     public DefaultMailboxFactoryImpl(final ExecutorService executorService,
             final boolean ownsExecutorService) {
         this(executorService, ownsExecutorService, null,
-                MessageQueue.INITIAL_LOCAL_QUEUE_SIZE);
+                MessageQueue.INITIAL_LOCAL_QUEUE_SIZE,
+                MessageQueue.INITIAL_BUFFER_SIZE);
     }
 
     public DefaultMailboxFactoryImpl(final ExecutorService executorService,
             final boolean ownsExecutorService,
             final MessageQueueFactory messageQueueFactory,
-            final int initialLocalMessageQueueSize) {
+            final int initialLocalMessageQueueSize, final int initialBufferSize) {
         this.executorService = (executorService == null) ? Executors
                 .newCachedThreadPool() : executorService;
         this.messageQueueFactory = (messageQueueFactory == null) ? DefaultMessageQueueFactoryImpl.INSTANCE
                 : messageQueueFactory;
         this.initialLocalMessageQueueSize = initialLocalMessageQueueSize;
         this.ownsExecutorService = ownsExecutorService;
+        this.initialBufferSize = initialBufferSize;
     }
 
     @Override
     public final Mailbox createMailbox() {
-        return createMailbox(false, null);
+        return createMailbox(false, initialBufferSize, null);
     }
 
     @Override
     public final Mailbox createMailbox(final boolean _mayBlock) {
-        return createMailbox(_mayBlock, null);
+        return createMailbox(_mayBlock, initialBufferSize, null);
     }
 
     @Override
@@ -81,7 +86,27 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
         return createMailbox(_mayBlock, _onIdle, null, this,
                 messageQueueFactory
                         .createMessageQueue(initialLocalMessageQueueSize),
-                mailboxLog);
+                mailboxLog, initialBufferSize);
+    }
+
+    @Override
+    public final Mailbox createMailbox(final int initialBufferSize) {
+        return createMailbox(false, initialBufferSize, null);
+    }
+
+    @Override
+    public final Mailbox createMailbox(final boolean _mayBlock,
+            final int initialBufferSize) {
+        return createMailbox(_mayBlock, initialBufferSize, null);
+    }
+
+    @Override
+    public final Mailbox createMailbox(final boolean _mayBlock,
+            final int initialBufferSize, final Runnable _onIdle) {
+        return createMailbox(_mayBlock, _onIdle, null, this,
+                messageQueueFactory
+                        .createMessageQueue(initialLocalMessageQueueSize),
+                mailboxLog, initialBufferSize);
     }
 
     @Override
@@ -90,13 +115,13 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
         return createMailbox(true, null, _messageProcessor, this,
                 messageQueueFactory
                         .createMessageQueue(initialLocalMessageQueueSize),
-                mailboxLog);
+                mailboxLog, initialBufferSize);
     }
 
     public final Mailbox createMailbox(final boolean _disableCommandeering,
             final Runnable _onIdle, final MessageQueue messageQueue) {
         return createMailbox(_disableCommandeering, _onIdle, null, this,
-                messageQueue, mailboxLog);
+                messageQueue, mailboxLog, initialBufferSize);
     }
 
     @Override
@@ -168,8 +193,8 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
     protected Mailbox createMailbox(final boolean _mayBlock,
             final Runnable _onIdle, final Runnable _messageProcessor,
             final _MailboxFactory factory, final MessageQueue messageQueue,
-            final Logger _log) {
+            final Logger _log, final int _initialBufferSize) {
         return new MailboxImpl(_mayBlock, _onIdle, _messageProcessor, factory,
-                messageQueue, _log);
+                messageQueue, _log, _initialBufferSize);
     }
 }

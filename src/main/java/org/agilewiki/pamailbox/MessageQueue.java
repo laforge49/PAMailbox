@@ -19,6 +19,11 @@ public interface MessageQueue {
     int INITIAL_LOCAL_QUEUE_SIZE = 16;
 
     /**
+     * How big should the initial (per target Mailbox) buffer size be?
+     */
+    int INITIAL_BUFFER_SIZE = 16;
+
+    /**
      * Creates a new Message instance.
      */
     <E, A extends Actor> Message createMessage(final MessageSource source,

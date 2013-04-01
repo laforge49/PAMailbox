@@ -27,6 +27,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
     private final boolean commandeeringDisabled; //todo: disable commandeering when true
     private final Runnable onIdle;
     private final Runnable messageProcessor;
+    private final int initialBufferSize;
 
     /**
      * Send buffer
@@ -41,14 +42,16 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
      */
     public MailboxImpl(final boolean _mayBlock, final Runnable _onIdle,
             final Runnable _messageProcessor, final _MailboxFactory factory,
-            final MessageQueue messageQueue, final Logger _log) {
+            final MessageQueue messageQueue, final Logger _log,
+            final int _initialBufferSize) {
         commandeeringDisabled = _mayBlock;
         onIdle = _onIdle;
         messageProcessor = _messageProcessor;
         running.set(messageProcessor != null);
-        this.mailboxFactory = factory;
-        this.inbox = messageQueue;
+        mailboxFactory = factory;
+        inbox = messageQueue;
         log = _log;
+        initialBufferSize = _initialBufferSize;
     }
 
     @Override
@@ -204,7 +207,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
             buffer = sendBuffer.get(target);
         }
         if (buffer == null) {
-            buffer = new ArrayList<Message>();
+            buffer = new ArrayList<Message>(initialBufferSize);
             sendBuffer.put(target, buffer);
         }
         buffer.add(message);
