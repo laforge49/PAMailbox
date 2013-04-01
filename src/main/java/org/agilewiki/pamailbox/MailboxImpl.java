@@ -25,7 +25,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
     private final MessageQueue inbox;
     private final AtomicBoolean running = new AtomicBoolean();
     private final boolean commandeeringDisabled; //todo: disable commandeering when true
-    private final boolean messageBuffering;
+    private final Runnable onIdle;
     private final Runnable messageProcessor;
 
     /** Send buffer */
@@ -36,11 +36,11 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
 
     /** messageQueue can be null to use the default queue implementation. */
     public MailboxImpl(final boolean _mayBlock,
-            final boolean _disableMessageBuffering,
+            final Runnable _onIdle,
             final Runnable _messageProcessor, final _MailboxFactory factory,
             final MessageQueue messageQueue) {
         commandeeringDisabled = _mayBlock;
-        messageBuffering = !_disableMessageBuffering;
+        onIdle = _onIdle;
         messageProcessor = _messageProcessor;
         running.set(messageProcessor != null);
         this.mailboxFactory = factory;
@@ -180,7 +180,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
      */
     @Override
     public boolean buffer(final Message message, final MessageSource target) {
-        if (messageBuffering) {
+        if (onIdle != null) {
             List<Message> buffer;
             if (sendBuffer == null) {
                 sendBuffer = new HashMap<MessageSource, List<Message>>();
@@ -214,6 +214,8 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
             while (true) {
                 final Message message = inbox.poll();
                 if (message == null) {
+                    if (!onIdle())
+                        continue;
                     running.set(false);
                     // If inbox.isNonEmpty() was ever to throw an Exception,
                     // we should still be in a consistent state, since there
@@ -223,8 +225,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
                             return;
                         continue;
                     }
-                    if (onIdle())
-                        return;
+                    return;
                 }
                 if (message.isResponsePending())
                     processRequestMessage(message);
@@ -234,7 +235,11 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
     }
 
     private boolean onIdle() {
-        return !inbox.isNonEmpty();
+        if (onIdle != null) {
+            onIdle.run();
+            return !inbox.isNonEmpty();
+        }
+        return true;
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
