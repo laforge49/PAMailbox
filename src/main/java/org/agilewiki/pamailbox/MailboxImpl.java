@@ -203,7 +203,8 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
             while (true) {
                 final Message message = inbox.poll();
                 if (message == null)
-                    return;
+                    if (onIdle())
+                        return;
                 if (message.isResponsePending())
                     processRequestMessage(message);
                 else
@@ -222,12 +223,18 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
                             return;
                         continue;
                     }
+                    if (onIdle())
+                        return;
                 }
                 if (message.isResponsePending())
                     processRequestMessage(message);
                 else
                     processResponseMessage(message);
             }
+    }
+
+    private boolean onIdle() {
+        return !inbox.isNonEmpty();
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
