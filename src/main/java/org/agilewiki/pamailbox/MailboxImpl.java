@@ -279,13 +279,16 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
                                 throws Exception {
                             if (!message.isResponsePending())
                                 return;
-                            message.setResponse(response);
                             if (message.getResponseProcessor() != EventResponseProcessor.SINGLETON) {
+                                message.setResponse(response);
                                 message.getMessageSource().incomingResponse(
                                         message, MailboxImpl.this);
-                            } else if (response instanceof Throwable) {
-                                log.warn("Uncaught throwable",
-                                        (Throwable) response);
+                            } else {
+                                //todo: clear Message to speed gc?  No effect!
+                                if (response instanceof Throwable) {
+                                    log.warn("Uncaught throwable",
+                                            (Throwable) response);
+                                }
                             }
                         }
                     });
@@ -340,6 +343,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
         @SuppressWarnings("rawtypes")
         final ResponseProcessor responseProcessor = message
                 .getResponseProcessor();
+        //todo: clear Message to speed gc?  No effect!
         try {
             responseProcessor.processResponse(response);
         } catch (final Throwable t) {
