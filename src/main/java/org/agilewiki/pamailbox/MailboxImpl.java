@@ -132,9 +132,10 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
                 request, null,
                 (ResponseProcessor<E>) DummyResponseProcessor.SINGLETON);
         // Using a Caller means never local
-        // TODO Should we buffer here? (We don't atm)
-        // TODO what if another actor with the same mailbox is called by accident?
-        // Don't we get a deadlock?
+        // Should we buffer here? (We don't atm) Buffering would be pointless!
+        // What if another actor with the same mailbox is called by accident?
+        // Don't we get a deadlock?  Yes. And developers can write infinite loops, too.
+        // Sanity checks, if you add them, should be turned off in production.
         addMessage(null, message, false);
         return (E) caller.call();
     }
@@ -182,7 +183,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
      * Should be called after adding some message(s) to the queue.
      */
     private void afterAdd() throws Exception {
-        if (running.compareAndSet(false, true)) {
+        if (!running.get() && running.compareAndSet(false, true)) {   //strange looking speed enhancement --b
             if (inbox.isNonEmpty())
                 mailboxFactory.submit(this);
             else
@@ -256,7 +257,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
         try {
             flush();
         } catch (final Throwable t) {
-            processThrowable(t);
+            // processThrowable(t); //do not call processThrowable here //todo: log it
         }
         if (onIdle != null) {
             onIdle.run();
