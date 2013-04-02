@@ -35,7 +35,7 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
 
     private final Logger log = LoggerFactory.getLogger(MailboxFactory.class);
 
-    private final ExecutorService executorService;
+    private final ThreadManager threadManager;
     private final boolean ownsExecutorService;
     private final MessageQueueFactory messageQueueFactory;
     /** Must also be thread-safe. */
@@ -51,19 +51,19 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
                 MessageQueue.INITIAL_BUFFER_SIZE);
     }
 
-    public DefaultMailboxFactoryImpl(final ExecutorService executorService,
+    public DefaultMailboxFactoryImpl(final ThreadManager threadManager,
             final boolean ownsExecutorService) {
-        this(executorService, ownsExecutorService, null,
+        this(threadManager, ownsExecutorService, null,
                 MessageQueue.INITIAL_LOCAL_QUEUE_SIZE,
                 MessageQueue.INITIAL_BUFFER_SIZE);
     }
 
-    public DefaultMailboxFactoryImpl(final ExecutorService executorService,
+    public DefaultMailboxFactoryImpl(final ThreadManager threadManager,
             final boolean ownsExecutorService,
             final MessageQueueFactory messageQueueFactory,
             final int initialLocalMessageQueueSize, final int initialBufferSize) {
-        this.executorService = (executorService == null) ? Executors
-                .newCachedThreadPool() : executorService;
+        this.threadManager = (threadManager == null) ?
+                ThreadManagerImpl.newThreadManager(10) : threadManager;
         this.messageQueueFactory = (messageQueueFactory == null) ? DefaultMessageQueueFactoryImpl.INSTANCE
                 : messageQueueFactory;
         this.initialLocalMessageQueueSize = initialLocalMessageQueueSize;
@@ -128,7 +128,7 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
     @Override
     public final void submit(final Runnable task) throws Exception {
         try {
-            executorService.submit(task);
+            threadManager.process(task);
         } catch (final Exception e) {
             if (!isClosing())
                 throw e;
@@ -164,7 +164,7 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
     public final void close() throws Exception {
         if (shuttingDown.compareAndSet(false, true)) {
             if (ownsExecutorService) {
-                executorService.shutdownNow();
+                threadManager.close();
             }
             final Iterator<AutoCloseable> it = closables.iterator();
             while (it.hasNext()) {
