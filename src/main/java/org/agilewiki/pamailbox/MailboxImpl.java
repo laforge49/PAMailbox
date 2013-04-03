@@ -257,7 +257,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
         try {
             flush();
         } catch (final Throwable t) {
-            // processThrowable(t); //do not call processThrowable here //todo: log it
+            log.error("Exception thrown by flush", t);
         }
         if (onIdle != null) {
             onIdle.run();
