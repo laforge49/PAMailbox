@@ -25,7 +25,6 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
      * is not used anymore, it might eventually get GCed.
      */
     private static final class LazyHolder {
-        //todo eliminate the static--OSGi incompatible
         public static final MailboxFactory SINGLETON = new DefaultMailboxFactoryImpl();
     }
 

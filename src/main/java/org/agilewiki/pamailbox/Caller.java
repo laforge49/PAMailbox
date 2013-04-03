@@ -22,7 +22,6 @@ final class Caller implements MessageSource {
     public void incomingResponse(final Message message,
             final Mailbox responseSource) {
         this.result = message.getResponse();
-        //todo: clear Message to speed gc?  No effect!
         done.release();
     }
 
