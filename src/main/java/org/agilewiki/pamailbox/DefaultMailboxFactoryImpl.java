@@ -3,8 +3,6 @@ package org.agilewiki.pamailbox;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.agilewiki.pactor.Mailbox;
@@ -25,8 +23,7 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
 
     private final Logger log = LoggerFactory.getLogger(MailboxFactory.class);
 
-    private final ExecutorService executorService;
-    private final boolean ownsExecutorService;
+    private final ThreadManager threadManager;
     private final MessageQueueFactory messageQueueFactory;
     /** Must also be thread-safe. */
     private final List<AutoCloseable> closables = new Vector<AutoCloseable>();
@@ -37,27 +34,23 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
     private final int initialBufferSize;
 
     public DefaultMailboxFactoryImpl() {
-        this(null, true, null, MessageQueue.INITIAL_LOCAL_QUEUE_SIZE,
+        this(null, null, MessageQueue.INITIAL_LOCAL_QUEUE_SIZE,
                 MessageQueue.INITIAL_BUFFER_SIZE);
     }
 
-    public DefaultMailboxFactoryImpl(final ExecutorService executorService,
-            final boolean ownsExecutorService) {
-        this(executorService, ownsExecutorService, null,
-                MessageQueue.INITIAL_LOCAL_QUEUE_SIZE,
+    public DefaultMailboxFactoryImpl(final ThreadManager threadManager) {
+        this(threadManager, null, MessageQueue.INITIAL_LOCAL_QUEUE_SIZE,
                 MessageQueue.INITIAL_BUFFER_SIZE);
     }
 
-    public DefaultMailboxFactoryImpl(final ExecutorService executorService,
-            final boolean ownsExecutorService,
+    public DefaultMailboxFactoryImpl(final ThreadManager threadManager,
             final MessageQueueFactory messageQueueFactory,
             final int initialLocalMessageQueueSize, final int initialBufferSize) {
-        this.executorService = (executorService == null) ? Executors
-                .newCachedThreadPool() : executorService;
+        this.threadManager = (threadManager == null) ? ThreadManagerImpl
+                .newThreadManager(10) : threadManager;
         this.messageQueueFactory = (messageQueueFactory == null) ? new DefaultMessageQueueFactoryImpl()
                 : messageQueueFactory;
         this.initialLocalMessageQueueSize = initialLocalMessageQueueSize;
-        this.ownsExecutorService = ownsExecutorService;
         this.initialBufferSize = initialBufferSize;
     }
 
@@ -118,7 +111,7 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
     @Override
     public final void submit(final Runnable task) throws Exception {
         try {
-            executorService.submit(task);
+            threadManager.process(task);
         } catch (final Exception e) {
             if (!isClosing())
                 throw e;
@@ -153,9 +146,7 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
     @Override
     public final void close() throws Exception {
         if (shuttingDown.compareAndSet(false, true)) {
-            if (ownsExecutorService) {
-                executorService.shutdownNow();
-            }
+            threadManager.close();
             final Iterator<AutoCloseable> it = closables.iterator();
             while (it.hasNext()) {
                 try {

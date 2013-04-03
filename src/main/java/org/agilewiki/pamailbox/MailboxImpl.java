@@ -137,9 +137,10 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
                 request, null,
                 (ResponseProcessor<E>) DummyResponseProcessor.SINGLETON);
         // Using a Caller means never local
-        // TODO Should we buffer here? (We don't atm)
-        // TODO what if another actor with the same mailbox is called by accident?
-        // Don't we get a deadlock?
+        // Should we buffer here? (We don't atm) Buffering would be pointless!
+        // What if another actor with the same mailbox is called by accident?
+        // Don't we get a deadlock?  Yes. And developers can write infinite loops, too.
+        // Sanity checks, if you add them, should be turned off in production.
         addMessage(null, message, false);
         return (E) caller.call();
     }
@@ -187,7 +188,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
      * Should be called after adding some message(s) to the queue.
      */
     private void afterAdd() throws Exception {
-        if (running.compareAndSet(false, true)) {
+        if (!running.get() && running.compareAndSet(false, true)) {   //strange looking speed enhancement --b
             if (inbox.isNonEmpty())
                 mailboxFactory.submit(this);
             else
@@ -261,7 +262,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
         try {
             flush();
         } catch (final Throwable t) {
-            processThrowable(t);
+            log.error("Exception thrown by flush", t);
         }
         if (onIdle != null) {
             onIdle.run();
@@ -283,13 +284,15 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
                                 throws Exception {
                             if (!message.isResponsePending())
                                 return;
-                            message.setResponse(response);
                             if (message.getResponseProcessor() != EventResponseProcessor.SINGLETON) {
+                                message.setResponse(response);
                                 message.getMessageSource().incomingResponse(
                                         message, MailboxImpl.this);
-                            } else if (response instanceof Throwable) {
-                                log.warn("Uncaught throwable",
-                                        (Throwable) response);
+                            } else {
+                                if (response instanceof Throwable) {
+                                    log.warn("Uncaught throwable",
+                                            (Throwable) response);
+                                }
                             }
                         }
                     });
