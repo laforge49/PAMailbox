@@ -34,7 +34,6 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
     private final Logger log = LoggerFactory.getLogger(MailboxFactory.class);
 
     private final ThreadManager threadManager;
-    private final boolean ownsExecutorService;
     private final MessageQueueFactory messageQueueFactory;
     /** Must also be thread-safe. */
     private final List<AutoCloseable> closables = new Vector<AutoCloseable>();
@@ -45,19 +44,17 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
     private final int initialBufferSize;
 
     public DefaultMailboxFactoryImpl() {
-        this(null, true, null, MessageQueue.INITIAL_LOCAL_QUEUE_SIZE,
+        this(null, null, MessageQueue.INITIAL_LOCAL_QUEUE_SIZE,
                 MessageQueue.INITIAL_BUFFER_SIZE);
     }
 
-    public DefaultMailboxFactoryImpl(final ThreadManager threadManager,
-            final boolean ownsExecutorService) {
-        this(threadManager, ownsExecutorService, null,
+    public DefaultMailboxFactoryImpl(final ThreadManager threadManager) {
+        this(threadManager, null,
                 MessageQueue.INITIAL_LOCAL_QUEUE_SIZE,
                 MessageQueue.INITIAL_BUFFER_SIZE);
     }
 
     public DefaultMailboxFactoryImpl(final ThreadManager threadManager,
-            final boolean ownsExecutorService,
             final MessageQueueFactory messageQueueFactory,
             final int initialLocalMessageQueueSize, final int initialBufferSize) {
         this.threadManager = (threadManager == null) ?
@@ -65,7 +62,6 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
         this.messageQueueFactory = (messageQueueFactory == null) ? DefaultMessageQueueFactoryImpl.INSTANCE
                 : messageQueueFactory;
         this.initialLocalMessageQueueSize = initialLocalMessageQueueSize;
-        this.ownsExecutorService = ownsExecutorService;
         this.initialBufferSize = initialBufferSize;
     }
 
@@ -161,9 +157,7 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
     @Override
     public final void close() throws Exception {
         if (shuttingDown.compareAndSet(false, true)) {
-            if (ownsExecutorService) {
-                threadManager.close();
-            }
+            threadManager.close();
             final Iterator<AutoCloseable> it = closables.iterator();
             while (it.hasNext()) {
                 try {
