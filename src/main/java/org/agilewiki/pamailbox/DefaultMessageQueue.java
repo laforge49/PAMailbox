@@ -1,7 +1,7 @@
 package org.agilewiki.pamailbox;
 
 import java.util.ArrayDeque;
-import java.util.Collection;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.agilewiki.pactor.Actor;
@@ -26,16 +26,16 @@ public class DefaultMessageQueue extends ConcurrentLinkedQueue<Object>
     /**
      * Local queue for same-mailbox exchanges.
      */
-    private final ArrayDeque<Message> localQueue;
+    private final ArrayDeque<Object> localQueue;
 
     /**
      * Creates a DefaultMessageQueue, with the given local queue initial size.
      */
     public DefaultMessageQueue(final int initialLocalQueueSize) {
         if (initialLocalQueueSize > INITIAL_LOCAL_QUEUE_SIZE)
-            localQueue = new ArrayDeque<Message>(initialLocalQueueSize);
+            localQueue = new ArrayDeque<Object>(initialLocalQueueSize);
         else
-            localQueue = new ArrayDeque<Message>(INITIAL_LOCAL_QUEUE_SIZE);
+            localQueue = new ArrayDeque<Object>(INITIAL_LOCAL_QUEUE_SIZE);
     }
 
     /**
@@ -79,9 +79,9 @@ public class DefaultMessageQueue extends ConcurrentLinkedQueue<Object>
      * @param msgs   The new messages
      */
     @Override
-    public void offer(final Collection<Message> msgs) {
+    public void offer(final Queue<Message> msgs) {
         if (!msgs.isEmpty()) {
-            super.addAll(msgs);
+            super.add(msgs);
         }
     }
 
@@ -90,18 +90,38 @@ public class DefaultMessageQueue extends ConcurrentLinkedQueue<Object>
      */
     @Override
     public Message poll() {
-        Message result = localQueue.poll();
-        if (result == null) {
-            final Object obj = super.poll();
+        Object obj = localQueue.peek();
+        if (obj == null) {
+            obj = super.poll();
+            if (obj == null) {
+                return null;
+            } else {
+                if (obj instanceof Message) {
+                    return (Message) obj;
+                } else {
+                    @SuppressWarnings("unchecked")
+                    final Queue<Message> msgs = (Queue<Message>) obj;
+                    final Message result = msgs.poll();
+                    if (!msgs.isEmpty()) {
+                        // msgs is not empty so save it in localQueue
+                        localQueue.offer(msgs);
+                    }
+                    return result;
+                }
+            }
+        } else {
             if (obj instanceof Message) {
-                result = (Message) obj;
-            } else if (obj != null) {
+                return (Message) localQueue.poll();
+            } else {
                 @SuppressWarnings("unchecked")
-                final Collection<Message> msgs = (Collection<Message>) obj;
-                localQueue.addAll(msgs);
-                result = localQueue.poll();
+                final Queue<Message> msgs = (Queue<Message>) obj;
+                final Message result = msgs.poll();
+                if (msgs.isEmpty()) {
+                    // msgs is empty, so remove msgs from localQueue
+                    localQueue.poll();
+                }
+                return result;
             }
         }
-        return result;
     }
 }

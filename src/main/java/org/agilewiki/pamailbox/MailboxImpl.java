@@ -1,12 +1,11 @@
 package org.agilewiki.pamailbox;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.ArrayDeque;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.agilewiki.pactor.Actor;
@@ -32,7 +31,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
     /**
      * Send buffer
      */
-    private Map<MessageSource, List<Message>> sendBuffer;
+    private Map<MessageSource, ArrayDeque<Message>> sendBuffer;
 
     private ExceptionHandler exceptionHandler;
     private Message currentMessage;
@@ -69,13 +68,14 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
     public final boolean flush() throws Exception {
         boolean result = false;
         if (sendBuffer != null) {
-            final Iterator<Entry<MessageSource, List<Message>>> iter = sendBuffer
+            final Iterator<Entry<MessageSource, ArrayDeque<Message>>> iter = sendBuffer
                     .entrySet().iterator();
             while (iter.hasNext()) {
                 result = true;
-                final Entry<MessageSource, List<Message>> entry = iter.next();
+                final Entry<MessageSource, ArrayDeque<Message>> entry = iter
+                        .next();
                 final MessageSource target = entry.getKey();
-                final List<Message> messages = entry.getValue();
+                final ArrayDeque<Message> messages = entry.getValue();
                 iter.remove();
                 target.addUnbufferedMessages(messages);
             }
@@ -178,7 +178,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
      * Adds messages to the queue.
      */
     @Override
-    public void addUnbufferedMessages(final Collection<Message> messages)
+    public void addUnbufferedMessages(final Queue<Message> messages)
             throws Exception {
         inbox.offer(messages);
         afterAdd();
@@ -205,15 +205,15 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
      */
     @Override
     public boolean buffer(final Message message, final MessageSource target) {
-        List<Message> buffer;
+        ArrayDeque<Message> buffer;
         if (sendBuffer == null) {
-            sendBuffer = new IdentityHashMap<MessageSource, List<Message>>();
+            sendBuffer = new IdentityHashMap<MessageSource, ArrayDeque<Message>>();
             buffer = null;
         } else {
             buffer = sendBuffer.get(target);
         }
         if (buffer == null) {
-            buffer = new ArrayList<Message>(initialBufferSize);
+            buffer = new ArrayDeque<Message>(initialBufferSize);
             sendBuffer.put(target, buffer);
         }
         buffer.add(message);

@@ -1,6 +1,6 @@
 package org.agilewiki.pamailbox;
 
-import java.util.Collection;
+import java.util.Queue;
 
 import org.agilewiki.pactor.Actor;
 import org.agilewiki.pactor.Mailbox;
@@ -21,8 +21,7 @@ public interface MessageSource {
     boolean buffer(final Message message, final MessageSource target);
 
     /** Adds messages to the queue. */
-    void addUnbufferedMessages(final Collection<Message> messages)
-            throws Exception;
+    void addUnbufferedMessages(final Queue<Message> messages) throws Exception;
 
     /** Returns true, if this message source is currently processing messages. */
     boolean isRunning();

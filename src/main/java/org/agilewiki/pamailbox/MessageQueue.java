@@ -1,6 +1,6 @@
 package org.agilewiki.pamailbox;
 
-import java.util.Collection;
+import java.util.Queue;
 
 import org.agilewiki.pactor.Actor;
 import org.agilewiki.pactor.ExceptionHandler;
@@ -50,7 +50,7 @@ public interface MessageQueue {
      *
      * @param msgs     The new messages
      */
-    void offer(final Collection<Message> msgs);
+    void offer(final Queue<Message> msgs);
 
     /**
      * Retrieves and removes the head of this queue, or returns null if this queue is empty.
