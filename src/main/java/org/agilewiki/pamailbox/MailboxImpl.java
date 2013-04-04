@@ -372,4 +372,9 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
     public final MailboxFactory getMailboxFactory() {
         return mailboxFactory;
     }
+
+    @Override
+    public void createPort(final Mailbox _source) {
+
+    }
 }
