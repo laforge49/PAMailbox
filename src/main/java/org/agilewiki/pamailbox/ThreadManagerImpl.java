@@ -27,7 +27,7 @@ final public class ThreadManagerImpl implements ThreadManager {
     /**
      * When closing is true, concurrent exit as they finish their assigned tasks.
      */
-    private Boolean closing = false;
+    private boolean closing = false;
 
     /**
      * The threadCount is the number of threads used.
