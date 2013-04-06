@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.agilewiki.pactor.Mailbox;
 import org.agilewiki.pactor.MailboxFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +18,7 @@ import org.slf4j.LoggerFactory;
  */
 
 public class DefaultMailboxFactoryImpl implements _MailboxFactory {
-    private final Logger mailboxLog = LoggerFactory.getLogger(Mailbox.class);
+    private final Logger mailboxLog = LoggerFactory.getLogger(PAMailbox.class);
 
     private final Logger log = LoggerFactory.getLogger(MailboxFactory.class);
 
@@ -55,17 +54,17 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
     }
 
     @Override
-    public final Mailbox createMailbox() {
+    public final PAMailbox createMailbox() {
         return createMailbox(false, initialBufferSize, null);
     }
 
     @Override
-    public final Mailbox createMailbox(final boolean _mayBlock) {
+    public final PAMailbox createMailbox(final boolean _mayBlock) {
         return createMailbox(_mayBlock, initialBufferSize, null);
     }
 
     @Override
-    public final Mailbox createMailbox(final boolean _mayBlock,
+    public final PAMailbox createMailbox(final boolean _mayBlock,
             final Runnable _onIdle) {
         return createMailbox(_mayBlock, _onIdle, null, this,
                 messageQueueFactory
@@ -74,18 +73,18 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
     }
 
     @Override
-    public final Mailbox createMailbox(final int initialBufferSize) {
+    public final PAMailbox createMailbox(final int initialBufferSize) {
         return createMailbox(false, initialBufferSize, null);
     }
 
     @Override
-    public final Mailbox createMailbox(final boolean _mayBlock,
+    public final PAMailbox createMailbox(final boolean _mayBlock,
             final int initialBufferSize) {
         return createMailbox(_mayBlock, initialBufferSize, null);
     }
 
     @Override
-    public final Mailbox createMailbox(final boolean _mayBlock,
+    public final PAMailbox createMailbox(final boolean _mayBlock,
             final int initialBufferSize, final Runnable _onIdle) {
         return createMailbox(_mayBlock, _onIdle, null, this,
                 messageQueueFactory
@@ -94,7 +93,7 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
     }
 
     @Override
-    public final Mailbox createThreadBoundMailbox(
+    public final PAMailbox createThreadBoundMailbox(
             final Runnable _messageProcessor) {
         return createMailbox(true, null, _messageProcessor, this,
                 messageQueueFactory
@@ -102,7 +101,7 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
                 mailboxLog, initialBufferSize);
     }
 
-    public final Mailbox createMailbox(final boolean _disableCommandeering,
+    public final PAMailbox createMailbox(final boolean _disableCommandeering,
             final Runnable _onIdle, final MessageQueue messageQueue) {
         return createMailbox(_disableCommandeering, _onIdle, null, this,
                 messageQueue, mailboxLog, initialBufferSize);
@@ -167,7 +166,7 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
      * Actually instantiate the Mailbox.
      * Can be overridden, to create application-specific Mailbox instances.
      */
-    protected Mailbox createMailbox(final boolean _mayBlock,
+    protected PAMailbox createMailbox(final boolean _mayBlock,
             final Runnable _onIdle, final Runnable _messageProcessor,
             final _MailboxFactory factory, final MessageQueue messageQueue,
             final Logger _log, final int _initialBufferSize) {

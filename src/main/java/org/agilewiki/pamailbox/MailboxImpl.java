@@ -8,15 +8,10 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.agilewiki.pactor.Actor;
-import org.agilewiki.pactor.ExceptionHandler;
-import org.agilewiki.pactor.Mailbox;
-import org.agilewiki.pactor.MailboxFactory;
-import org.agilewiki.pactor.ResponseProcessor;
-import org.agilewiki.pactor._Request;
+import org.agilewiki.pactor.*;
 import org.slf4j.Logger;
 
-public class MailboxImpl implements Mailbox, Runnable, MessageSource {
+public class MailboxImpl implements PAMailbox, Runnable, MessageSource {
 
     private final Logger log;
 
@@ -356,7 +351,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
 
     @Override
     public final void incomingResponse(final Message message,
-            final Mailbox responseSource) {
+            final PAMailbox responseSource) {
 //        final MailboxImpl sourceMailbox = (MailboxImpl) responseSource;
 //        if (!sourceMailbox.running.get())
 //            throw new IllegalStateException(
@@ -374,7 +369,7 @@ public class MailboxImpl implements Mailbox, Runnable, MessageSource {
     }
 
     @Override
-    public void createPort(final Mailbox _source) {
-
+    public PAMailbox createPort(final Mailbox _source) {
+        return this;
     }
 }

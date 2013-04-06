@@ -4,7 +4,6 @@ import java.util.Queue;
 import java.util.concurrent.Semaphore;
 
 import org.agilewiki.pactor.Actor;
-import org.agilewiki.pactor.Mailbox;
 import org.agilewiki.pactor.ResponseProcessor;
 import org.agilewiki.pactor._Request;
 
@@ -23,7 +22,7 @@ final class Caller implements MessageSource {
 
     @Override
     public void incomingResponse(final Message message,
-            final Mailbox responseSource) {
+            final PAMailbox responseSource) {
         this.result = message.getResponse();
         done.release();
     }

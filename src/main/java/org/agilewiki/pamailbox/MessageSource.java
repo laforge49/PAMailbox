@@ -3,14 +3,13 @@ package org.agilewiki.pamailbox;
 import java.util.Queue;
 
 import org.agilewiki.pactor.Actor;
-import org.agilewiki.pactor.Mailbox;
 import org.agilewiki.pactor.ResponseProcessor;
 import org.agilewiki.pactor._Request;
 
 public interface MessageSource {
 
     /** Process an incoming response. */
-    void incomingResponse(final Message message, final Mailbox responseSource);
+    void incomingResponse(final Message message, final PAMailbox responseSource);
 
     /**
      * Returns true, if the message could be buffered before sending.
