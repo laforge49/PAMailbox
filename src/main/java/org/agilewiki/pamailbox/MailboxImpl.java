@@ -15,7 +15,7 @@ public class MailboxImpl implements PAMailbox, Runnable, MessageSource {
 
     private final Logger log;
 
-    private final _MailboxFactory mailboxFactory;
+    private final PAMailboxFactory mailboxFactory;
     private final MessageQueue inbox;
     private final AtomicBoolean running = new AtomicBoolean();
     private final boolean commandeeringDisabled; //todo: disable commandeering when true
@@ -35,7 +35,7 @@ public class MailboxImpl implements PAMailbox, Runnable, MessageSource {
      * messageQueue can be null to use the default queue implementation.
      */
     public MailboxImpl(final boolean _mayBlock, final Runnable _onIdle,
-            final Runnable _messageProcessor, final _MailboxFactory factory,
+            final Runnable _messageProcessor, final PAMailboxFactory factory,
             final MessageQueue messageQueue, final Logger _log,
             final int _initialBufferSize) {
         commandeeringDisabled = _mayBlock;
@@ -364,7 +364,7 @@ public class MailboxImpl implements PAMailbox, Runnable, MessageSource {
     }
 
     @Override
-    public final MailboxFactory getMailboxFactory() {
+    public final PAMailboxFactory getMailboxFactory() {
         return mailboxFactory;
     }
 

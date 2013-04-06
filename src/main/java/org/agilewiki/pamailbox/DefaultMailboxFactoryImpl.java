@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  * </p>
  */
 
-public class DefaultMailboxFactoryImpl implements _MailboxFactory {
+public class DefaultMailboxFactoryImpl implements PAMailboxFactory {
     private final Logger mailboxLog = LoggerFactory.getLogger(PAMailbox.class);
 
     private final Logger log = LoggerFactory.getLogger(MailboxFactory.class);
@@ -168,7 +168,7 @@ public class DefaultMailboxFactoryImpl implements _MailboxFactory {
      */
     protected PAMailbox createMailbox(final boolean _mayBlock,
             final Runnable _onIdle, final Runnable _messageProcessor,
-            final _MailboxFactory factory, final MessageQueue messageQueue,
+            final PAMailboxFactory factory, final MessageQueue messageQueue,
             final Logger _log, final int _initialBufferSize) {
         return new MailboxImpl(_mayBlock, _onIdle, _messageProcessor, factory,
                 messageQueue, _log, _initialBufferSize);
