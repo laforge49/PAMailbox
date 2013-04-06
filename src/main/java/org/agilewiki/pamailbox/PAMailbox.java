@@ -11,5 +11,7 @@ public interface PAMailbox extends Mailbox {
      *
      * @param _source The mailbox that originates the request or result message.
      */
-    PAMailbox createPort(final Mailbox _source);
+    PAMailbox createPort(final Mailbox _source, int size);
+
+    public boolean isFull();
 }

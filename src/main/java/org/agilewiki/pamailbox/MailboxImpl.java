@@ -369,7 +369,12 @@ public class MailboxImpl implements PAMailbox, Runnable, MessageSource {
     }
 
     @Override
-    public PAMailbox createPort(final Mailbox _source) {
+    public PAMailbox createPort(final Mailbox _source, int size) {
         return this;
+    }
+
+    @Override
+    public boolean isFull() {
+        return false;
     }
 }
