@@ -8,7 +8,11 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.agilewiki.pactor.*;
+import org.agilewiki.pactor.Actor;
+import org.agilewiki.pactor.ExceptionHandler;
+import org.agilewiki.pactor.Mailbox;
+import org.agilewiki.pactor.ResponseProcessor;
+import org.agilewiki.pactor._Request;
 import org.slf4j.Logger;
 
 public class MailboxImpl implements PAMailbox, Runnable, MessageSource {
@@ -268,31 +272,37 @@ public class MailboxImpl implements PAMailbox, Runnable, MessageSource {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private void processRequestMessage(final Message message) {
-        exceptionHandler = null; //NOPMD
-        currentMessage = message;
-        final _Request<?, Actor> request = message.getRequest();
+        beforeProcessMessage(true, message);
         try {
-            request.processRequest(message.getTargetActor(),
-                    new ResponseProcessor() {
-                        @Override
-                        public void processResponse(final Object response)
-                                throws Exception {
-                            if (!message.isResponsePending())
-                                return;
-                            if (message.getResponseProcessor() != EventResponseProcessor.SINGLETON) {
-                                message.setResponse(response);
-                                message.getMessageSource().incomingResponse(
-                                        message, MailboxImpl.this);
-                            } else {
-                                if (response instanceof Throwable) {
-                                    log.warn("Uncaught throwable",
-                                            (Throwable) response);
+            exceptionHandler = null; //NOPMD
+            currentMessage = message;
+            final _Request<?, Actor> request = message.getRequest();
+            try {
+                request.processRequest(message.getTargetActor(),
+                        new ResponseProcessor() {
+                            @Override
+                            public void processResponse(final Object response)
+                                    throws Exception {
+                                if (!message.isResponsePending())
+                                    return;
+                                if (message.getResponseProcessor() != EventResponseProcessor.SINGLETON) {
+                                    message.setResponse(response);
+                                    message.getMessageSource()
+                                            .incomingResponse(message,
+                                                    MailboxImpl.this);
+                                } else {
+                                    if (response instanceof Throwable) {
+                                        log.warn("Uncaught throwable",
+                                                (Throwable) response);
+                                    }
                                 }
                             }
-                        }
-                    });
-        } catch (final Throwable t) {
-            processThrowable(t);
+                        });
+            } catch (final Throwable t) {
+                processThrowable(t);
+            }
+        } finally {
+            afterProcessMessage(true, message);
         }
     }
 
@@ -332,20 +342,25 @@ public class MailboxImpl implements PAMailbox, Runnable, MessageSource {
 
     @SuppressWarnings("unchecked")
     private void processResponseMessage(final Message message) {
-        final Object response = message.getResponse();
-        exceptionHandler = message.getSourceExceptionHandler();
-        currentMessage = message.getOldMessage();
-        if (response instanceof Throwable) {
-            processThrowable((Throwable) response);
-            return;
-        }
-        @SuppressWarnings("rawtypes")
-        final ResponseProcessor responseProcessor = message
-                .getResponseProcessor();
+        beforeProcessMessage(false, message);
         try {
-            responseProcessor.processResponse(response);
-        } catch (final Throwable t) {
-            processThrowable(t);
+            final Object response = message.getResponse();
+            exceptionHandler = message.getSourceExceptionHandler();
+            currentMessage = message.getOldMessage();
+            if (response instanceof Throwable) {
+                processThrowable((Throwable) response);
+                return;
+            }
+            @SuppressWarnings("rawtypes")
+            final ResponseProcessor responseProcessor = message
+                    .getResponseProcessor();
+            try {
+                responseProcessor.processResponse(response);
+            } catch (final Throwable t) {
+                processThrowable(t);
+            }
+        } finally {
+            afterProcessMessage(false, message);
         }
     }
 
@@ -364,17 +379,29 @@ public class MailboxImpl implements PAMailbox, Runnable, MessageSource {
     }
 
     @Override
-    public final PAMailboxFactory getMailboxFactory() {
+    public PAMailboxFactory getMailboxFactory() {
         return mailboxFactory;
     }
 
     @Override
-    public PAMailbox createPort(final Mailbox _source, int size) {
+    public PAMailbox createPort(final Mailbox _source, final int size) {
         return this;
     }
 
     @Override
     public boolean isFull() {
         return false;
+    }
+
+    /** Called before running processXXXMessage(Message). */
+    protected void beforeProcessMessage(final boolean request,
+            final Message message) {
+        // NOP
+    }
+
+    /** Called after running processXXXMessage(Message). */
+    protected void afterProcessMessage(final boolean request,
+            final Message message) {
+        // NOP
     }
 }

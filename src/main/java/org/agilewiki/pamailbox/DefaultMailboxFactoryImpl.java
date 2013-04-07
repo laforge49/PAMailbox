@@ -17,7 +17,8 @@ import org.slf4j.LoggerFactory;
  * </p>
  */
 
-public class DefaultMailboxFactoryImpl implements PAMailboxFactory {
+public class DefaultMailboxFactoryImpl<M extends PAMailbox> implements
+        PAMailboxFactory {
     private final Logger mailboxLog = LoggerFactory.getLogger(PAMailbox.class);
 
     private final Logger log = LoggerFactory.getLogger(MailboxFactory.class);
@@ -54,56 +55,54 @@ public class DefaultMailboxFactoryImpl implements PAMailboxFactory {
     }
 
     @Override
-    public final PAMailbox createMailbox() {
+    public final M createMailbox() {
         return createMailbox(false, initialBufferSize, null);
     }
 
     @Override
-    public final PAMailbox createMailbox(final boolean _mayBlock) {
+    public final M createMailbox(final boolean _mayBlock) {
         return createMailbox(_mayBlock, initialBufferSize, null);
     }
 
     @Override
-    public final PAMailbox createMailbox(final boolean _mayBlock,
-            final Runnable _onIdle) {
-        return createMailbox(_mayBlock, _onIdle, null, this,
+    public final M createMailbox(final boolean _mayBlock, final Runnable _onIdle) {
+        return createMailbox(_mayBlock, _onIdle, null,
                 messageQueueFactory
                         .createMessageQueue(initialLocalMessageQueueSize),
                 mailboxLog, initialBufferSize);
     }
 
     @Override
-    public final PAMailbox createMailbox(final int initialBufferSize) {
+    public final M createMailbox(final int initialBufferSize) {
         return createMailbox(false, initialBufferSize, null);
     }
 
     @Override
-    public final PAMailbox createMailbox(final boolean _mayBlock,
+    public final M createMailbox(final boolean _mayBlock,
             final int initialBufferSize) {
         return createMailbox(_mayBlock, initialBufferSize, null);
     }
 
     @Override
-    public final PAMailbox createMailbox(final boolean _mayBlock,
+    public final M createMailbox(final boolean _mayBlock,
             final int initialBufferSize, final Runnable _onIdle) {
-        return createMailbox(_mayBlock, _onIdle, null, this,
+        return createMailbox(_mayBlock, _onIdle, null,
                 messageQueueFactory
                         .createMessageQueue(initialLocalMessageQueueSize),
                 mailboxLog, initialBufferSize);
     }
 
     @Override
-    public final PAMailbox createThreadBoundMailbox(
-            final Runnable _messageProcessor) {
-        return createMailbox(true, null, _messageProcessor, this,
+    public final M createThreadBoundMailbox(final Runnable _messageProcessor) {
+        return createMailbox(true, null, _messageProcessor,
                 messageQueueFactory
                         .createMessageQueue(initialLocalMessageQueueSize),
                 mailboxLog, initialBufferSize);
     }
 
-    public final PAMailbox createMailbox(final boolean _disableCommandeering,
+    public final M createMailbox(final boolean _disableCommandeering,
             final Runnable _onIdle, final MessageQueue messageQueue) {
-        return createMailbox(_disableCommandeering, _onIdle, null, this,
+        return createMailbox(_disableCommandeering, _onIdle, null,
                 messageQueue, mailboxLog, initialBufferSize);
     }
 
@@ -166,11 +165,11 @@ public class DefaultMailboxFactoryImpl implements PAMailboxFactory {
      * Actually instantiate the Mailbox.
      * Can be overridden, to create application-specific Mailbox instances.
      */
-    protected PAMailbox createMailbox(final boolean _mayBlock,
-            final Runnable _onIdle, final Runnable _messageProcessor,
-            final PAMailboxFactory factory, final MessageQueue messageQueue,
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    protected M createMailbox(final boolean _mayBlock, final Runnable _onIdle,
+            final Runnable _messageProcessor, final MessageQueue messageQueue,
             final Logger _log, final int _initialBufferSize) {
-        return new MailboxImpl(_mayBlock, _onIdle, _messageProcessor, factory,
+        return (M) new MailboxImpl(_mayBlock, _onIdle, _messageProcessor, this,
                 messageQueue, _log, _initialBufferSize);
     }
 }
