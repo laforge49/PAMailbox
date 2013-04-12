@@ -6,6 +6,7 @@ import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.agilewiki.pactor.MailboxFactory;
+import org.agilewiki.pactor.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +33,9 @@ public class DefaultMailboxFactoryImpl<M extends PAMailbox> implements
     private final int initialLocalMessageQueueSize;
     /** How big should the initial (per target Mailbox) buffer size be? */
     private final int initialBufferSize;
+
+    /** effectively final properties set manager. */
+    private Properties properties;
 
     public DefaultMailboxFactoryImpl() {
         this(null, null, MessageQueue.INITIAL_LOCAL_QUEUE_SIZE,
@@ -171,5 +175,17 @@ public class DefaultMailboxFactoryImpl<M extends PAMailbox> implements
             final Logger _log, final int _initialBufferSize) {
         return (M) new MailboxImpl(_mayBlock, _onIdle, _messageProcessor, this,
                 messageQueue, _log, _initialBufferSize);
+    }
+
+    @Override
+    public void setProperties(final Properties _properties) {
+        if (properties != null)
+            throw new IllegalStateException("properties has already been set");
+        properties = _properties;
+    }
+
+    @Override
+    public Properties getProperties() {
+        return properties;
     }
 }
