@@ -3,6 +3,7 @@ package org.agilewiki.pamailbox;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.agilewiki.pactor.MailboxFactory;
@@ -25,6 +26,7 @@ public class DefaultMailboxFactoryImpl<M extends PAMailbox> implements
     private final Logger log = LoggerFactory.getLogger(MailboxFactory.class);
 
     private final ThreadManager threadManager;
+    private final ThreadManager blockingThreadManager;
     private final MessageQueueFactory messageQueueFactory;
     /** Must also be thread-safe. */
     private final List<AutoCloseable> closables = new Vector<AutoCloseable>();
@@ -42,16 +44,19 @@ public class DefaultMailboxFactoryImpl<M extends PAMailbox> implements
                 MessageQueue.INITIAL_BUFFER_SIZE);
     }
 
-    public DefaultMailboxFactoryImpl(final ThreadManager threadManager) {
-        this(threadManager, null, MessageQueue.INITIAL_LOCAL_QUEUE_SIZE,
+    public DefaultMailboxFactoryImpl(final ThreadManager blockingThreadManager) {
+        this(blockingThreadManager, null,
+                MessageQueue.INITIAL_LOCAL_QUEUE_SIZE,
                 MessageQueue.INITIAL_BUFFER_SIZE);
     }
 
-    public DefaultMailboxFactoryImpl(final ThreadManager threadManager,
+    public DefaultMailboxFactoryImpl(final ThreadManager blockingThreadManager,
             final MessageQueueFactory messageQueueFactory,
             final int initialLocalMessageQueueSize, final int initialBufferSize) {
-        this.threadManager = (threadManager == null) ? ThreadManagerImpl
-                .newThreadManager(10) : threadManager;
+        this.threadManager = ThreadManagerImpl.newThreadManager(Runtime
+                .getRuntime().availableProcessors() + 1);
+        this.blockingThreadManager = (blockingThreadManager == null) ? new ExecutorServiceWrapper(
+                Executors.newCachedThreadPool()) : blockingThreadManager;
         this.messageQueueFactory = (messageQueueFactory == null) ? new DefaultMessageQueueFactoryImpl()
                 : messageQueueFactory;
         this.initialLocalMessageQueueSize = initialLocalMessageQueueSize;
@@ -104,16 +109,17 @@ public class DefaultMailboxFactoryImpl<M extends PAMailbox> implements
                 mailboxLog, initialBufferSize);
     }
 
-    public final M createMailbox(final boolean _disableCommandeering,
+    public final M createMailbox(final boolean _mayBlock,
             final Runnable _onIdle, final MessageQueue messageQueue) {
-        return createMailbox(_disableCommandeering, _onIdle, null,
-                messageQueue, mailboxLog, initialBufferSize);
+        return createMailbox(_mayBlock, _onIdle, null, messageQueue,
+                mailboxLog, initialBufferSize);
     }
 
     @Override
-    public final void submit(final Runnable task) throws Exception {
+    public final void submit(final Runnable task, final boolean willBlock)
+            throws Exception {
         try {
-            threadManager.process(task);
+            (willBlock ? blockingThreadManager : threadManager).process(task);
         } catch (final Exception e) {
             if (!isClosing())
                 throw e;
@@ -149,6 +155,7 @@ public class DefaultMailboxFactoryImpl<M extends PAMailbox> implements
     public final void close() throws Exception {
         if (shuttingDown.compareAndSet(false, true)) {
             threadManager.close();
+            blockingThreadManager.close();
             final Iterator<AutoCloseable> it = closables.iterator();
             while (it.hasNext()) {
                 try {

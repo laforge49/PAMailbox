@@ -22,10 +22,17 @@ public class MailboxImpl implements PAMailbox, Runnable, MessageSource {
     private final PAMailboxFactory mailboxFactory;
     private final MessageQueue inbox;
     private final AtomicBoolean running = new AtomicBoolean();
-    private final boolean commandeeringDisabled; //todo: disable commandeering when true
     private final Runnable onIdle;
     private final Runnable messageProcessor;
     private final int initialBufferSize;
+    /**
+     * For performance reasons, we want to differentiate between Mailboxes that
+     * usually block their thread, and Mailboxes that usually don't block, and
+     * return quickly.
+     *
+     * TODO: disable commandeering when true
+     */
+    private final boolean mayBlock;
 
     /**
      * Send buffer
@@ -42,7 +49,7 @@ public class MailboxImpl implements PAMailbox, Runnable, MessageSource {
             final Runnable _messageProcessor, final PAMailboxFactory factory,
             final MessageQueue messageQueue, final Logger _log,
             final int _initialBufferSize) {
-        commandeeringDisabled = _mayBlock;
+        mayBlock = _mayBlock;
         onIdle = _onIdle;
         messageProcessor = _messageProcessor;
         running.set(messageProcessor != null);
@@ -187,9 +194,9 @@ public class MailboxImpl implements PAMailbox, Runnable, MessageSource {
      * Should be called after adding some message(s) to the queue.
      */
     private void afterAdd() throws Exception {
-        if (!running.get() && running.compareAndSet(false, true)) {   //strange looking speed enhancement --b
+        if (running.compareAndSet(false, true)) {
             if (inbox.isNonEmpty())
-                mailboxFactory.submit(this);
+                mailboxFactory.submit(this, mayBlock);
             else
                 running.set(false);
         } else if (messageProcessor != null)
