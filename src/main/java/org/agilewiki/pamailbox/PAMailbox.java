@@ -2,7 +2,7 @@ package org.agilewiki.pamailbox;
 
 import org.agilewiki.pactor.Mailbox;
 
-public interface PAMailbox extends Mailbox, AutoCloseable {
+public interface PAMailbox extends Mailbox, AutoCloseable, MessageSource {
 
     /**
      * A port creates a high-speed one-way connection between two mailboxes.

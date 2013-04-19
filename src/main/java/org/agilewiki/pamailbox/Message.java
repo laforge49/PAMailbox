@@ -14,6 +14,7 @@ import org.agilewiki.pactor.*;
  */
 
 public class Message implements AutoCloseable {
+    private final boolean foreign;
     private final MessageSource messageSource;
     private final Actor targetActor;
     private final Message oldMessage;
@@ -22,6 +23,14 @@ public class Message implements AutoCloseable {
     private final ResponseProcessor<?> responseProcessor;
     private boolean responsePending = true;
     private Object response;
+
+    /**
+     * Returns true when the response is to be sent to another mailbox factory.
+     * @return True when the response is to be sent to another mailbox factory.
+     */
+    public boolean isForeign() {
+        return foreign;
+    }
 
     /**
      * @return the responsePending
@@ -88,18 +97,20 @@ public class Message implements AutoCloseable {
     }
 
     public <E, A extends Actor> Message(
-            final MessageSource source,
+            final boolean _foreign,
+            final MessageSource _source,
             final A _targetActor,
-            final Message old,
+            final Message _old,
             final _Request<E, A> _request,
-            final ExceptionHandler handler,
-            final ResponseProcessor<E> rp) {
-        messageSource = source;
+            final ExceptionHandler _handler,
+            final ResponseProcessor<E> _rp) {
+        messageSource = _source;
+        foreign = _foreign;
         targetActor = _targetActor;
-        oldMessage = old;
+        oldMessage = _old;
         request = (_Request<?, Actor>) _request;
-        sourceExceptionHandler = handler;
-        responseProcessor = rp;
+        sourceExceptionHandler = _handler;
+        responseProcessor = _rp;
     }
 
     @Override

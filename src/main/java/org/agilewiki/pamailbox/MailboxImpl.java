@@ -15,7 +15,7 @@ import org.agilewiki.pactor.ResponseProcessor;
 import org.agilewiki.pactor._Request;
 import org.slf4j.Logger;
 
-public class MailboxImpl implements PAMailbox, Runnable, MessageSource {
+public class MailboxImpl implements PAMailbox, Runnable {
 
     private final Logger log;
 
@@ -95,10 +95,17 @@ public class MailboxImpl implements PAMailbox, Runnable, MessageSource {
     }
 
     @Override
-    public final <A extends Actor> void signal(final _Request<Void, A> request,
+    public final <A extends Actor> void signal(
+            final _Request<Void, A> request,
             final A targetActor) throws Exception {
-        final Message message = inbox.createMessage(null, targetActor, null,
-                request, null, EventResponseProcessor.SINGLETON);
+        final Message message = inbox.createMessage(
+                false,
+                null,
+                targetActor,
+                null,
+                request,
+                null,
+                EventResponseProcessor.SINGLETON);
         // No source mean never local and no buffering.
         addMessage(null, message, false);
     }
@@ -107,22 +114,40 @@ public class MailboxImpl implements PAMailbox, Runnable, MessageSource {
      * Same as signal(Request) until buffered message are implemented.
      */
     @Override
-    public final <A extends Actor> void signal(final _Request<Void, A> request,
-            final Mailbox source, final A targetActor) throws Exception {
-        send(request, source, targetActor, EventResponseProcessor.SINGLETON);
-    }
-
-    @Override
-    public final <E, A extends Actor> void send(final _Request<E, A> request,
-            final Mailbox source, final A targetActor,
-            final ResponseProcessor<E> responseProcessor) throws Exception {
+    public final <A extends Actor> void signal(
+            final _Request<Void, A> request,
+            final Mailbox source,
+            final A targetActor) throws Exception {
         final MessageSource sourceMailbox = (MessageSource) source;
         if (!sourceMailbox.isRunning())
             throw new IllegalStateException(
                     "A valid source mailbox can not be idle");
-        final Message message = sourceMailbox.createMessage(inbox, request,
-                targetActor, responseProcessor);
+        final Message message = sourceMailbox.createMessage(
+                false,
+                inbox,
+                request,
+                targetActor,
+                EventResponseProcessor.SINGLETON);
         addMessage(sourceMailbox, message, this == source);
+    }
+
+    @Override
+    public final <E, A extends Actor> void send(
+            final _Request<E, A> request,
+            final Mailbox source,
+            final A targetActor,
+            final ResponseProcessor<E> responseProcessor) throws Exception {
+        final PAMailbox sourceMailbox = (PAMailbox) source;
+        if (!sourceMailbox.isRunning())
+            throw new IllegalStateException(
+                    "A valid source mailbox can not be idle");
+        final Message message = sourceMailbox.createMessage(
+                this != sourceMailbox && mailboxFactory != sourceMailbox.getMailboxFactory(),
+                inbox,
+                request,
+                targetActor,
+                responseProcessor);
+        addMessage(sourceMailbox, message, this == sourceMailbox);
     }
 
     /** Returns true, if this message source is currently processing messages. */
@@ -133,10 +158,19 @@ public class MailboxImpl implements PAMailbox, Runnable, MessageSource {
 
     @Override
     public final <E, A extends Actor> Message createMessage(
-            final MessageQueue inbox, final _Request<E, A> request,
-            final A targetActor, final ResponseProcessor<E> responseProcessor) {
-        return inbox.createMessage(this, targetActor, currentMessage, request,
-                exceptionHandler, responseProcessor);
+            final boolean _foreign,
+            final MessageQueue inbox,
+            final _Request<E, A> request,
+            final A targetActor,
+            final ResponseProcessor<E> responseProcessor) {
+        return inbox.createMessage(
+                _foreign,
+                this,
+                targetActor,
+                currentMessage,
+                request,
+                exceptionHandler,
+                responseProcessor);
     }
 
     @SuppressWarnings("unchecked")
@@ -144,8 +178,13 @@ public class MailboxImpl implements PAMailbox, Runnable, MessageSource {
     public final <E, A extends Actor> E call(final _Request<E, A> request,
             final A targetActor) throws Exception {
         final Caller caller = new Caller();
-        final Message message = inbox.createMessage(caller, targetActor, null,
-                request, null,
+        final Message message = inbox.createMessage(
+                true,
+                caller,
+                targetActor,
+                null,
+                request,
+                null,
                 (ResponseProcessor<E>) DummyResponseProcessor.SINGLETON);
         // Using a Caller means never local
         // Should we buffer here? (We don't atm) Buffering would be pointless!

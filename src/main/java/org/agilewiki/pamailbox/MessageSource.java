@@ -25,7 +25,10 @@ public interface MessageSource {
     /** Returns true, if this message source is currently processing messages. */
     boolean isRunning();
 
-    <E, A extends Actor> Message createMessage(final MessageQueue inbox,
-            final _Request<E, A> request, final A targetActor,
+    <E, A extends Actor> Message createMessage(
+            final boolean _foreign,
+            final MessageQueue inbox,
+            final _Request<E, A> request,
+            final A targetActor,
             final ResponseProcessor<E> responseProcessor);
 }

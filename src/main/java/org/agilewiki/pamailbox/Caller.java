@@ -44,8 +44,11 @@ final class Caller implements MessageSource {
     }
 
     @Override
-    public <E, A extends Actor> Message createMessage(final MessageQueue inbox,
-            final _Request<E, A> request, final A targetActor,
+    public <E, A extends Actor> Message createMessage(
+            final boolean _foreign,
+            final MessageQueue inbox,
+            final _Request<E, A> request,
+            final A targetActor,
             final ResponseProcessor<E> responseProcessor) {
         throw new UnsupportedOperationException();
     }
