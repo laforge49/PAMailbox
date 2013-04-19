@@ -194,7 +194,11 @@ public class MailboxImpl implements PAMailbox, Runnable, MessageSource {
      * Should be called after adding some message(s) to the queue.
      */
     private void afterAdd() throws Exception {
-        if (running.compareAndSet(false, true)) {
+        /**
+         * The compareAndSet method is a moderately expensive operation,
+         * so we use a guard expression to reduce the number of times it is called.
+         */
+        if (!running.get() && running.compareAndSet(false, true)) {
             if (inbox.isNonEmpty())
                 mailboxFactory.submit(this, mayBlock);
             else
