@@ -57,7 +57,7 @@ public class ExecutorServiceWrapper implements ThreadManager {
      */
     @Override
     public void logException(final boolean fatal, final String msg,
-                             final Throwable exception) {
+            final Throwable exception) {
         if (fatal)
             logger.error(msg, exception);
         else

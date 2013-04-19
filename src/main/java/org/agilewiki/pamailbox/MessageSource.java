@@ -25,10 +25,7 @@ public interface MessageSource {
      */
     boolean isRunning();
 
-    <E, A extends Actor> Message createMessage(
-            final boolean _foreign,
-            final MessageQueue inbox,
-            final _Request<E, A> request,
-            final A targetActor,
-            final ResponseProcessor<E> responseProcessor);
+    <E, A extends Actor> Message createMessage(final boolean _foreign,
+            final MessageQueue inbox, final _Request<E, A> request,
+            final A targetActor, final ResponseProcessor<E> responseProcessor);
 }

@@ -21,7 +21,7 @@ final class Caller implements MessageSource {
 
     @Override
     public void incomingResponse(final Message message,
-                                 final PAMailbox responseSource) {
+            final PAMailbox responseSource) {
         this.result = message.getResponse();
         done.release();
     }
@@ -37,12 +37,9 @@ final class Caller implements MessageSource {
     }
 
     @Override
-    public <E, A extends Actor> Message createMessage(
-            final boolean _foreign,
-            final MessageQueue inbox,
-            final _Request<E, A> request,
-            final A targetActor,
-            final ResponseProcessor<E> responseProcessor) {
+    public <E, A extends Actor> Message createMessage(final boolean _foreign,
+            final MessageQueue inbox, final _Request<E, A> request,
+            final A targetActor, final ResponseProcessor<E> responseProcessor) {
         throw new UnsupportedOperationException();
     }
 }

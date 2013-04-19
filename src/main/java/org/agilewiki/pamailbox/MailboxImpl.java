@@ -38,9 +38,9 @@ public class MailboxImpl implements PAMailbox, Runnable {
      * messageQueue can be null to use the default queue implementation.
      */
     public MailboxImpl(final boolean _mayBlock, final Runnable _onIdle,
-                       final Runnable _messageProcessor, final PAMailboxFactory factory,
-                       final MessageQueue messageQueue, final Logger _log,
-                       final int _initialBufferSize) {
+            final Runnable _messageProcessor, final PAMailboxFactory factory,
+            final MessageQueue messageQueue, final Logger _log,
+            final int _initialBufferSize) {
         mayBlock = _mayBlock;
         onIdle = _onIdle;
         messageProcessor = _messageProcessor;
@@ -63,8 +63,7 @@ public class MailboxImpl implements PAMailbox, Runnable {
         final Iterator<Entry<PAMailbox, ArrayDeque<Message>>> iter = sendBuffer
                 .entrySet().iterator();
         while (iter.hasNext()) {
-            final Entry<PAMailbox, ArrayDeque<Message>> entry = iter
-                    .next();
+            final Entry<PAMailbox, ArrayDeque<Message>> entry = iter.next();
             final PAMailbox target = entry.getKey();
             if (target.getMailboxFactory() != mailboxFactory) {
                 final ArrayDeque<Message> messages = entry.getValue();
@@ -99,8 +98,7 @@ public class MailboxImpl implements PAMailbox, Runnable {
                     .entrySet().iterator();
             while (iter.hasNext()) {
                 result = true;
-                final Entry<PAMailbox, ArrayDeque<Message>> entry = iter
-                        .next();
+                final Entry<PAMailbox, ArrayDeque<Message>> entry = iter.next();
                 final PAMailbox target = entry.getKey();
                 final ArrayDeque<Message> messages = entry.getValue();
                 iter.remove();
@@ -111,17 +109,10 @@ public class MailboxImpl implements PAMailbox, Runnable {
     }
 
     @Override
-    public final <A extends Actor> void signal(
-            final _Request<Void, A> request,
+    public final <A extends Actor> void signal(final _Request<Void, A> request,
             final A targetActor) throws Exception {
-        final Message message = inbox.createMessage(
-                false,
-                null,
-                targetActor,
-                null,
-                request,
-                null,
-                EventResponseProcessor.SINGLETON);
+        final Message message = inbox.createMessage(false, null, targetActor,
+                null, request, null, EventResponseProcessor.SINGLETON);
         // No source mean never local and no buffering.
         addMessage(null, message, false);
     }
@@ -130,39 +121,29 @@ public class MailboxImpl implements PAMailbox, Runnable {
      * Same as signal(Request) until buffered message are implemented.
      */
     @Override
-    public final <A extends Actor> void signal(
-            final _Request<Void, A> request,
-            final Mailbox source,
-            final A targetActor) throws Exception {
+    public final <A extends Actor> void signal(final _Request<Void, A> request,
+            final Mailbox source, final A targetActor) throws Exception {
         final MessageSource sourceMailbox = (MessageSource) source;
         if (!sourceMailbox.isRunning())
             throw new IllegalStateException(
                     "A valid source mailbox can not be idle");
-        final Message message = sourceMailbox.createMessage(
-                false,
-                inbox,
-                request,
-                targetActor,
-                EventResponseProcessor.SINGLETON);
+        final Message message = sourceMailbox.createMessage(false, inbox,
+                request, targetActor, EventResponseProcessor.SINGLETON);
         addMessage(sourceMailbox, message, this == source);
     }
 
     @Override
-    public final <E, A extends Actor> void send(
-            final _Request<E, A> request,
-            final Mailbox source,
-            final A targetActor,
+    public final <E, A extends Actor> void send(final _Request<E, A> request,
+            final Mailbox source, final A targetActor,
             final ResponseProcessor<E> responseProcessor) throws Exception {
         final PAMailbox sourceMailbox = (PAMailbox) source;
         if (!sourceMailbox.isRunning())
             throw new IllegalStateException(
                     "A valid source mailbox can not be idle");
         final Message message = sourceMailbox.createMessage(
-                this != sourceMailbox && mailboxFactory != sourceMailbox.getMailboxFactory(),
-                inbox,
-                request,
-                targetActor,
-                responseProcessor);
+                this != sourceMailbox
+                        && mailboxFactory != sourceMailbox.getMailboxFactory(),
+                inbox, request, targetActor, responseProcessor);
         addMessage(sourceMailbox, message, this == sourceMailbox);
     }
 
@@ -176,33 +157,20 @@ public class MailboxImpl implements PAMailbox, Runnable {
 
     @Override
     public final <E, A extends Actor> Message createMessage(
-            final boolean _foreign,
-            final MessageQueue inbox,
-            final _Request<E, A> request,
-            final A targetActor,
+            final boolean _foreign, final MessageQueue inbox,
+            final _Request<E, A> request, final A targetActor,
             final ResponseProcessor<E> responseProcessor) {
-        return inbox.createMessage(
-                _foreign,
-                this,
-                targetActor,
-                currentMessage,
-                request,
-                exceptionHandler,
-                responseProcessor);
+        return inbox.createMessage(_foreign, this, targetActor, currentMessage,
+                request, exceptionHandler, responseProcessor);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public final <E, A extends Actor> E call(final _Request<E, A> request,
-                                             final A targetActor) throws Exception {
+            final A targetActor) throws Exception {
         final Caller caller = new Caller();
-        final Message message = inbox.createMessage(
-                true,
-                caller,
-                targetActor,
-                null,
-                request,
-                null,
+        final Message message = inbox.createMessage(true, caller, targetActor,
+                null, request, null,
                 (ResponseProcessor<E>) DummyResponseProcessor.SINGLETON);
         // Using a Caller means never local
         // Should we buffer here? (We don't atm) Buffering would be pointless!
@@ -225,7 +193,7 @@ public class MailboxImpl implements PAMailbox, Runnable {
     }
 
     private void addMessage(final MessageSource sourceMailbox,
-                            final Message message, final boolean local) throws Exception {
+            final Message message, final boolean local) throws Exception {
         // sourceMailbox is either null, or running ...
         if ((sourceMailbox == null) || local
                 || !sourceMailbox.buffer(message, this)) {
@@ -365,7 +333,7 @@ public class MailboxImpl implements PAMailbox, Runnable {
         return true;
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private void processRequestMessage(final Message message) {
         if (message.isForeign())
             mailboxFactory.addAutoClosable(message);
@@ -467,7 +435,7 @@ public class MailboxImpl implements PAMailbox, Runnable {
 
     @Override
     public final void incomingResponse(final Message message,
-                                       final PAMailbox responseSource) {
+            final PAMailbox responseSource) {
 //        final MailboxImpl sourceMailbox = (MailboxImpl) responseSource;
 //        if (!sourceMailbox.running.get())
 //            throw new IllegalStateException(
@@ -498,7 +466,7 @@ public class MailboxImpl implements PAMailbox, Runnable {
      * Called before running processXXXMessage(Message).
      */
     protected void beforeProcessMessage(final boolean request,
-                                        final Message message) {
+            final Message message) {
         // NOP
     }
 
@@ -506,7 +474,7 @@ public class MailboxImpl implements PAMailbox, Runnable {
      * Called after running processXXXMessage(Message).
      */
     protected void afterProcessMessage(final boolean request,
-                                       final Message message) {
+            final Message message) {
         // NOP
     }
 }

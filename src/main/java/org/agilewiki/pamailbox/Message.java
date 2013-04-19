@@ -97,14 +97,10 @@ public class Message implements AutoCloseable {
         return responseProcessor;
     }
 
-    public <E, A extends Actor> Message(
-            final boolean _foreign,
-            final MessageSource _source,
-            final A _targetActor,
-            final Message _old,
-            final _Request<E, A> _request,
-            final ExceptionHandler _handler,
-            final ResponseProcessor<E> _rp) {
+    public <E, A extends Actor> Message(final boolean _foreign,
+            final MessageSource _source, final A _targetActor,
+            final Message _old, final _Request<E, A> _request,
+            final ExceptionHandler _handler, final ResponseProcessor<E> _rp) {
         messageSource = _source;
         foreign = _foreign;
         targetActor = _targetActor;

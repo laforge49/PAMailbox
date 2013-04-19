@@ -42,15 +42,12 @@ public class DefaultMessageQueue extends ConcurrentLinkedQueue<Object>
      * Creates a new Message instance.
      */
     @Override
-    public <E, A extends Actor> Message createMessage(
-            final boolean foreign,
-            final MessageSource source,
-            final A targetActor,
-            final Message old,
-            final _Request<E, A> _request,
-            final ExceptionHandler handler,
+    public <E, A extends Actor> Message createMessage(final boolean foreign,
+            final MessageSource source, final A targetActor, final Message old,
+            final _Request<E, A> _request, final ExceptionHandler handler,
             final ResponseProcessor<E> rp) {
-        return new Message(foreign, source, targetActor, old, _request, handler, rp);
+        return new Message(foreign, source, targetActor, old, _request,
+                handler, rp);
     }
 
     /**

@@ -29,5 +29,5 @@ public interface ThreadManager {
     public void close();
 
     public void logException(final boolean fatal, final String msg,
-                             final Throwable exception);
+            final Throwable exception);
 }

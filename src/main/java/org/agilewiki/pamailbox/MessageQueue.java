@@ -26,14 +26,10 @@ public interface MessageQueue {
     /**
      * Creates a new Message instance.
      */
-    <E, A extends Actor> Message createMessage(
-            final boolean _foreign,
-            final MessageSource _source,
-            final A _targetActor,
-            final Message _old,
-            final _Request<E, A> _request,
-            final ExceptionHandler _handler,
-            final ResponseProcessor<E> _rp);
+    <E, A extends Actor> Message createMessage(final boolean _foreign,
+            final MessageSource _source, final A _targetActor,
+            final Message _old, final _Request<E, A> _request,
+            final ExceptionHandler _handler, final ResponseProcessor<E> _rp);
 
     /**
      * Is the queue empty?
