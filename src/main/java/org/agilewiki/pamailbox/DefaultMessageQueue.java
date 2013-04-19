@@ -75,7 +75,6 @@ public class DefaultMessageQueue extends ConcurrentLinkedQueue<Object>
     /**
      * Inserts a new message in the queue.
      *
-     * @param local Should be true for same-mailbox exchanges
      * @param msgs   The new messages
      */
     @Override

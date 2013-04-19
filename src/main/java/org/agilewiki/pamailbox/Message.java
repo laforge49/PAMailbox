@@ -16,7 +16,7 @@ import org.agilewiki.pactor._Request;
  * </p>
  */
 
-public class Message {
+public class Message implements AutoCloseable {
     private final MessageSource messageSource;
     private final Actor targetActor;
     private final Message oldMessage;
@@ -103,5 +103,10 @@ public class Message {
         request = (_Request<?, Actor>) _request;
         sourceExceptionHandler = handler;
         responseProcessor = rp;
+    }
+
+    @Override
+    public void close() throws Exception {
+        //todo
     }
 }

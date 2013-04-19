@@ -1,8 +1,8 @@
 package org.agilewiki.pamailbox;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -28,8 +28,8 @@ public class DefaultMailboxFactoryImpl<M extends PAMailbox> implements
     private final ThreadManager threadManager;
     private final ThreadManager blockingThreadManager;
     private final MessageQueueFactory messageQueueFactory;
-    /** Must also be thread-safe. */
-    private final List<AutoCloseable> closables = new Vector<AutoCloseable>();
+    private final Set<AutoCloseable> closables =
+            Collections.newSetFromMap(new ConcurrentHashMap<AutoCloseable, Boolean>());
     private final AtomicBoolean shuttingDown = new AtomicBoolean();
     /** How big should the initial local queue size be? */
     private final int initialLocalMessageQueueSize;
