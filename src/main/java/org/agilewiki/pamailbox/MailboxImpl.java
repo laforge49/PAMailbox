@@ -88,7 +88,7 @@ public class MailboxImpl implements PAMailbox, Runnable {
             if (message.isForeign() && message.isResponsePending())
                 try {
                     message.close();
-                } catch (Throwable t) {
+                } catch (final Throwable t) {
                 }
         }
     }
@@ -219,7 +219,7 @@ public class MailboxImpl implements PAMailbox, Runnable {
             if (message.isForeign() && message.isResponsePending())
                 try {
                     message.close();
-                } catch (Throwable t) {
+                } catch (final Throwable t) {
                 }
             return;
         }
@@ -234,13 +234,13 @@ public class MailboxImpl implements PAMailbox, Runnable {
     public void addUnbufferedMessages(final Queue<Message> messages)
             throws Exception {
         if (mailboxFactory.isClosing()) {
-            Iterator<Message> itm = messages.iterator();
+            final Iterator<Message> itm = messages.iterator();
             while (itm.hasNext()) {
-                Message message = itm.next();
+                final Message message = itm.next();
                 if (message.isForeign() && message.isResponsePending())
                     try {
                         message.close();
-                    } catch (Throwable t) {
+                    } catch (final Throwable t) {
                     }
             }
             return;
@@ -388,12 +388,15 @@ public class MailboxImpl implements PAMailbox, Runnable {
         if (!currentMessage.isResponsePending())
             return;
         final Message message = currentMessage;
-        if (exceptionHandler != null) {
+        final _Request<?, Actor> req = message.getRequest();
+        final ExceptionHandler handler = (req instanceof ExceptionHandler) ? ((ExceptionHandler) req)
+                : exceptionHandler;
+        if (handler != null) {
             try {
-                exceptionHandler.processException(t);
+                handler.processException(t);
             } catch (final Throwable u) {
                 log.error("Exception handler unable to process throwable "
-                        + exceptionHandler.getClass().getName(), t);
+                        + handler.getClass().getName(), t);
                 if (!(message.getResponseProcessor() instanceof EventResponseProcessor)) {
                     if (!message.isResponsePending())
                         return;
@@ -402,7 +405,7 @@ public class MailboxImpl implements PAMailbox, Runnable {
                             MailboxImpl.this);
                 } else {
                     log.error("Thrown by exception handler and uncaught "
-                            + exceptionHandler.getClass().getName(), t);
+                            + handler.getClass().getName(), t);
                 }
             }
         } else {
