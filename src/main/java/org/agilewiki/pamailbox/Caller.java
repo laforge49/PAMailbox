@@ -33,12 +33,6 @@ final class Caller implements MessageSource {
     }
 
     @Override
-    public void addUnbufferedMessages(final Queue<Message> messages)
-            throws Exception {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public boolean isRunning() {
         throw new UnsupportedOperationException();
     }

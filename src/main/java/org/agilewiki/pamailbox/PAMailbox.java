@@ -2,6 +2,8 @@ package org.agilewiki.pamailbox;
 
 import org.agilewiki.pactor.Mailbox;
 
+import java.util.Queue;
+
 public interface PAMailbox extends Mailbox, AutoCloseable, MessageSource {
 
     /**
@@ -14,4 +16,7 @@ public interface PAMailbox extends Mailbox, AutoCloseable, MessageSource {
     PAMailbox createPort(final Mailbox _source, int size);
 
     public boolean isFull();
+
+    /** Adds messages to the queue. */
+    void addUnbufferedMessages(final Queue<Message> messages) throws Exception;
 }

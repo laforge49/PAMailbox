@@ -19,9 +19,6 @@ public interface MessageSource {
      */
     boolean buffer(final Message message, final PAMailbox target);
 
-    /** Adds messages to the queue. */
-    void addUnbufferedMessages(final Queue<Message> messages) throws Exception;
-
     /** Returns true, if this message source is currently processing messages. */
     boolean isRunning();
 

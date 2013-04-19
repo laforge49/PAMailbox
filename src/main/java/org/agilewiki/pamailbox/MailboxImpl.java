@@ -99,7 +99,7 @@ public class MailboxImpl implements PAMailbox, Runnable {
                 result = true;
                 final Entry<PAMailbox, ArrayDeque<Message>> entry = iter
                         .next();
-                final MessageSource target = entry.getKey();
+                final PAMailbox target = entry.getKey();
                 final ArrayDeque<Message> messages = entry.getValue();
                 iter.remove();
                 target.addUnbufferedMessages(messages);
@@ -234,6 +234,8 @@ public class MailboxImpl implements PAMailbox, Runnable {
      */
     private void addUnbufferedMessage(final Message message, final boolean local)
             throws Exception {
+        if (mailboxFactory.isClosing())
+            return;
         inbox.offer(local, message);
         afterAdd();
     }
@@ -244,6 +246,8 @@ public class MailboxImpl implements PAMailbox, Runnable {
     @Override
     public void addUnbufferedMessages(final Queue<Message> messages)
             throws Exception {
+        if (mailboxFactory.isClosing())
+            return;
         inbox.offer(messages);
         afterAdd();
     }
