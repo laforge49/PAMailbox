@@ -1,16 +1,16 @@
 package org.agilewiki.pamailbox;
 
-import org.agilewiki.pactor.MailboxFactory;
-import org.agilewiki.pactor.Properties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.agilewiki.pactor.MailboxFactory;
+import org.agilewiki.pactor.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>

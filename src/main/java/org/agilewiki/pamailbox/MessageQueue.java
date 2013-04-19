@@ -1,11 +1,11 @@
 package org.agilewiki.pamailbox;
 
+import java.util.Queue;
+
 import org.agilewiki.pactor.Actor;
 import org.agilewiki.pactor.ExceptionHandler;
 import org.agilewiki.pactor.ResponseProcessor;
 import org.agilewiki.pactor._Request;
-
-import java.util.Queue;
 
 /**
  * A concurrent message queue, used in the Mailbox.

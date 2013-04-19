@@ -1,6 +1,7 @@
 package org.agilewiki.pamailbox.messaging;
 
 import junit.framework.TestCase;
+
 import org.agilewiki.pactor.Mailbox;
 import org.agilewiki.pactor.MailboxFactory;
 import org.agilewiki.pamailbox.DefaultMailboxFactoryImpl;

@@ -1,11 +1,19 @@
 package org.agilewiki.pamailbox;
 
-import org.agilewiki.pactor.*;
-import org.slf4j.Logger;
-
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.agilewiki.pactor.Actor;
+import org.agilewiki.pactor.ExceptionHandler;
+import org.agilewiki.pactor.Mailbox;
+import org.agilewiki.pactor.ResponseProcessor;
+import org.agilewiki.pactor._Request;
+import org.slf4j.Logger;
 
 public class MailboxImpl implements PAMailbox, Runnable {
 
@@ -57,6 +65,7 @@ public class MailboxImpl implements PAMailbox, Runnable {
         return !inbox.isNonEmpty();
     }
 
+    @Override
     public void close() throws Exception {
         if (sendBuffer == null)
             return;

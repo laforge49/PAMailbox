@@ -1,8 +1,8 @@
 package org.agilewiki.pamailbox;
 
-import org.agilewiki.pactor.Mailbox;
-
 import java.util.Queue;
+
+import org.agilewiki.pactor.Mailbox;
 
 public interface PAMailbox extends Mailbox, AutoCloseable, MessageSource {
 

@@ -1,10 +1,10 @@
 package org.agilewiki.pamailbox;
 
+import java.util.concurrent.Semaphore;
+
 import org.agilewiki.pactor.Actor;
 import org.agilewiki.pactor.ResponseProcessor;
 import org.agilewiki.pactor._Request;
-
-import java.util.concurrent.Semaphore;
 
 final class Caller implements MessageSource {
     private final Semaphore done = new Semaphore(0);
