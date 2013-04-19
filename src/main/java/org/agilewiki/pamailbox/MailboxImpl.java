@@ -238,8 +238,14 @@ public class MailboxImpl implements PAMailbox, Runnable {
      */
     private void addUnbufferedMessage(final Message message, final boolean local)
             throws Exception {
-        if (mailboxFactory.isClosing())
+        if (mailboxFactory.isClosing()) {
+            if (message.isForeign() && message.isResponsePending())
+                try {
+                    message.close();
+                } catch (Throwable t) {
+                }
             return;
+        }
         inbox.offer(local, message);
         afterAdd();
     }
@@ -250,8 +256,18 @@ public class MailboxImpl implements PAMailbox, Runnable {
     @Override
     public void addUnbufferedMessages(final Queue<Message> messages)
             throws Exception {
-        if (mailboxFactory.isClosing())
+        if (mailboxFactory.isClosing()) {
+            Iterator<Message> itm = messages.iterator();
+            while (itm.hasNext()) {
+                Message message = itm.next();
+                if (message.isForeign() && message.isResponsePending())
+                    try {
+                        message.close();
+                    } catch (Throwable t) {
+                    }
+            }
             return;
+        }
         inbox.offer(messages);
         afterAdd();
     }
