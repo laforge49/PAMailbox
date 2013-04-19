@@ -1,7 +1,5 @@
 package org.agilewiki.pamailbox;
 
-import org.agilewiki.pamailbox.ThreadManager;
-import org.agilewiki.pamailbox.ThreadManagerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +16,9 @@ public class ExecutorServiceWrapper implements ThreadManager {
     private static final Logger logger = LoggerFactory
             .getLogger(ThreadManagerImpl.class);
 
-    /** The executor service. */
+    /**
+     * The executor service.
+     */
     private final ExecutorService executorService;
 
     /**
@@ -57,7 +57,7 @@ public class ExecutorServiceWrapper implements ThreadManager {
      */
     @Override
     public void logException(final boolean fatal, final String msg,
-            final Throwable exception) {
+                             final Throwable exception) {
         if (fatal)
             logger.error(msg, exception);
         else

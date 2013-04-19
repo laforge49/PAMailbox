@@ -1,15 +1,16 @@
 package org.agilewiki.pamailbox;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.agilewiki.pactor.MailboxFactory;
 import org.agilewiki.pactor.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * <p>
@@ -31,12 +32,18 @@ public class DefaultMailboxFactoryImpl<M extends PAMailbox> implements
     private final Set<AutoCloseable> closables =
             Collections.newSetFromMap(new ConcurrentHashMap<AutoCloseable, Boolean>());
     private final AtomicBoolean shuttingDown = new AtomicBoolean();
-    /** How big should the initial local queue size be? */
+    /**
+     * How big should the initial local queue size be?
+     */
     private final int initialLocalMessageQueueSize;
-    /** How big should the initial (per target Mailbox) buffer size be? */
+    /**
+     * How big should the initial (per target Mailbox) buffer size be?
+     */
     private final int initialBufferSize;
 
-    /** effectively final properties set manager. */
+    /**
+     * effectively final properties set manager.
+     */
     private Properties properties;
 
     public DefaultMailboxFactoryImpl() {
@@ -51,8 +58,8 @@ public class DefaultMailboxFactoryImpl<M extends PAMailbox> implements
     }
 
     public DefaultMailboxFactoryImpl(final ThreadManager blockingThreadManager,
-            final MessageQueueFactory messageQueueFactory,
-            final int initialLocalMessageQueueSize, final int initialBufferSize) {
+                                     final MessageQueueFactory messageQueueFactory,
+                                     final int initialLocalMessageQueueSize, final int initialBufferSize) {
         this.threadManager = ThreadManagerImpl.newThreadManager(Runtime
                 .getRuntime().availableProcessors() + 1);
         this.blockingThreadManager = (blockingThreadManager == null) ? new ExecutorServiceWrapper(
@@ -88,13 +95,13 @@ public class DefaultMailboxFactoryImpl<M extends PAMailbox> implements
 
     @Override
     public final M createMailbox(final boolean _mayBlock,
-            final int initialBufferSize) {
+                                 final int initialBufferSize) {
         return createMailbox(_mayBlock, initialBufferSize, null);
     }
 
     @Override
     public final M createMailbox(final boolean _mayBlock,
-            final int initialBufferSize, final Runnable _onIdle) {
+                                 final int initialBufferSize, final Runnable _onIdle) {
         return createMailbox(_mayBlock, _onIdle, null,
                 messageQueueFactory
                         .createMessageQueue(initialLocalMessageQueueSize),
@@ -110,7 +117,7 @@ public class DefaultMailboxFactoryImpl<M extends PAMailbox> implements
     }
 
     public final M createMailbox(final boolean _mayBlock,
-            final Runnable _onIdle, final MessageQueue messageQueue) {
+                                 final Runnable _onIdle, final MessageQueue messageQueue) {
         return createMailbox(_mayBlock, _onIdle, null, messageQueue,
                 mailboxLog, initialBufferSize);
     }
@@ -176,10 +183,10 @@ public class DefaultMailboxFactoryImpl<M extends PAMailbox> implements
      * Actually instantiate the Mailbox.
      * Can be overridden, to create application-specific Mailbox instances.
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     protected M createMailbox(final boolean _mayBlock, final Runnable _onIdle,
-            final Runnable _messageProcessor, final MessageQueue messageQueue,
-            final Logger _log, final int _initialBufferSize) {
+                              final Runnable _messageProcessor, final MessageQueue messageQueue,
+                              final Logger _log, final int _initialBufferSize) {
         return (M) new MailboxImpl(_mayBlock, _onIdle, _messageProcessor, this,
                 messageQueue, _log, _initialBufferSize);
     }

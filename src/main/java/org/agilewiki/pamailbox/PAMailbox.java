@@ -17,6 +17,8 @@ public interface PAMailbox extends Mailbox, AutoCloseable, MessageSource {
 
     public boolean isFull();
 
-    /** Adds messages to the queue. */
+    /**
+     * Adds messages to the queue.
+     */
     void addUnbufferedMessages(final Queue<Message> messages) throws Exception;
 }

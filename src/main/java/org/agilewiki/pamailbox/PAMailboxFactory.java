@@ -22,7 +22,7 @@ public interface PAMailboxFactory extends MailboxFactory {
 
     @Override
     PAMailbox createMailbox(final boolean mayBlock,
-            final int initialBufferSize, final Runnable onIdle);
+                            final int initialBufferSize, final Runnable onIdle);
 
     @Override
     PAMailbox createThreadBoundMailbox(final Runnable _messageProcessor);

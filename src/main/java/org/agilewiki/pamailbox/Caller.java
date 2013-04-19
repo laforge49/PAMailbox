@@ -1,11 +1,10 @@
 package org.agilewiki.pamailbox;
 
-import java.util.Queue;
-import java.util.concurrent.Semaphore;
-
 import org.agilewiki.pactor.Actor;
 import org.agilewiki.pactor.ResponseProcessor;
 import org.agilewiki.pactor._Request;
+
+import java.util.concurrent.Semaphore;
 
 final class Caller implements MessageSource {
     private final Semaphore done = new Semaphore(0);
@@ -22,7 +21,7 @@ final class Caller implements MessageSource {
 
     @Override
     public void incomingResponse(final Message message,
-            final PAMailbox responseSource) {
+                                 final PAMailbox responseSource) {
         this.result = message.getResponse();
         done.release();
     }

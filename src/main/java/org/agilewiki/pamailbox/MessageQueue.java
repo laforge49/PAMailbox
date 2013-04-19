@@ -1,11 +1,11 @@
 package org.agilewiki.pamailbox;
 
-import java.util.Queue;
-
 import org.agilewiki.pactor.Actor;
 import org.agilewiki.pactor.ExceptionHandler;
 import org.agilewiki.pactor.ResponseProcessor;
 import org.agilewiki.pactor._Request;
+
+import java.util.Queue;
 
 /**
  * A concurrent message queue, used in the Mailbox.
@@ -44,7 +44,7 @@ public interface MessageQueue {
      * Inserts a new message in the queue.
      *
      * @param local Should be true for same-mailbox exchanges
-     * @param msg     The new message
+     * @param msg   The new message
      */
     void offer(final boolean local, final Message msg);
 
@@ -52,7 +52,7 @@ public interface MessageQueue {
      * Inserts a new message in the queue.
      * Multi-offer assumes the messages are not local.
      *
-     * @param msgs     The new messages
+     * @param msgs The new messages
      */
     void offer(final Queue<Message> msgs);
 

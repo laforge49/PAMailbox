@@ -1,13 +1,13 @@
 package org.agilewiki.pamailbox;
 
-import java.util.ArrayDeque;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import org.agilewiki.pactor.Actor;
 import org.agilewiki.pactor.ExceptionHandler;
 import org.agilewiki.pactor.ResponseProcessor;
 import org.agilewiki.pactor._Request;
+
+import java.util.ArrayDeque;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * A default <code>MessageQueue</code> implementation, using a
@@ -79,7 +79,7 @@ public class DefaultMessageQueue extends ConcurrentLinkedQueue<Object>
     /**
      * Inserts a new message in the queue.
      *
-     * @param msgs   The new messages
+     * @param msgs The new messages
      */
     @Override
     public void offer(final Queue<Message> msgs) {

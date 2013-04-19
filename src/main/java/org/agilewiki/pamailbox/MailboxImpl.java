@@ -1,19 +1,11 @@
 package org.agilewiki.pamailbox;
 
-import java.util.ArrayDeque;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Queue;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.agilewiki.pactor.Actor;
-import org.agilewiki.pactor.ExceptionHandler;
-import org.agilewiki.pactor.Mailbox;
-import org.agilewiki.pactor.ResponseProcessor;
-import org.agilewiki.pactor._Request;
+import org.agilewiki.pactor.*;
 import org.slf4j.Logger;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MailboxImpl implements PAMailbox, Runnable {
 
@@ -29,7 +21,7 @@ public class MailboxImpl implements PAMailbox, Runnable {
      * For performance reasons, we want to differentiate between Mailboxes that
      * usually block their thread, and Mailboxes that usually don't block, and
      * return quickly.
-     *
+     * <p/>
      * TODO: disable commandeering when true
      */
     private final boolean mayBlock;
@@ -46,9 +38,9 @@ public class MailboxImpl implements PAMailbox, Runnable {
      * messageQueue can be null to use the default queue implementation.
      */
     public MailboxImpl(final boolean _mayBlock, final Runnable _onIdle,
-            final Runnable _messageProcessor, final PAMailboxFactory factory,
-            final MessageQueue messageQueue, final Logger _log,
-            final int _initialBufferSize) {
+                       final Runnable _messageProcessor, final PAMailboxFactory factory,
+                       final MessageQueue messageQueue, final Logger _log,
+                       final int _initialBufferSize) {
         mayBlock = _mayBlock;
         onIdle = _onIdle;
         messageProcessor = _messageProcessor;
@@ -80,6 +72,16 @@ public class MailboxImpl implements PAMailbox, Runnable {
                 target.addUnbufferedMessages(messages);
             } else
                 iter.remove();
+        }
+        while (true) {
+            final Message message = inbox.poll();
+            if (message == null)
+                return;
+            if (message.isForeign() && message.isResponsePending())
+                try {
+                    message.close();
+                } catch (Throwable t) {
+                }
         }
     }
 
@@ -164,7 +166,9 @@ public class MailboxImpl implements PAMailbox, Runnable {
         addMessage(sourceMailbox, message, this == sourceMailbox);
     }
 
-    /** Returns true, if this message source is currently processing messages. */
+    /**
+     * Returns true, if this message source is currently processing messages.
+     */
     @Override
     public final boolean isRunning() {
         return running.get();
@@ -190,7 +194,7 @@ public class MailboxImpl implements PAMailbox, Runnable {
     @SuppressWarnings("unchecked")
     @Override
     public final <E, A extends Actor> E call(final _Request<E, A> request,
-            final A targetActor) throws Exception {
+                                             final A targetActor) throws Exception {
         final Caller caller = new Caller();
         final Message message = inbox.createMessage(
                 true,
@@ -221,7 +225,7 @@ public class MailboxImpl implements PAMailbox, Runnable {
     }
 
     private void addMessage(final MessageSource sourceMailbox,
-            final Message message, final boolean local) throws Exception {
+                            final Message message, final boolean local) throws Exception {
         // sourceMailbox is either null, or running ...
         if ((sourceMailbox == null) || local
                 || !sourceMailbox.buffer(message, this)) {
@@ -329,7 +333,9 @@ public class MailboxImpl implements PAMailbox, Runnable {
             }
     }
 
-    /** Called when all pending messages have been processed. */
+    /**
+     * Called when all pending messages have been processed.
+     */
     private boolean onIdle() {
         try {
             flush();
@@ -343,7 +349,7 @@ public class MailboxImpl implements PAMailbox, Runnable {
         return true;
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private void processRequestMessage(final Message message) {
         beforeProcessMessage(true, message);
         try {
@@ -439,7 +445,7 @@ public class MailboxImpl implements PAMailbox, Runnable {
 
     @Override
     public final void incomingResponse(final Message message,
-            final PAMailbox responseSource) {
+                                       final PAMailbox responseSource) {
 //        final MailboxImpl sourceMailbox = (MailboxImpl) responseSource;
 //        if (!sourceMailbox.running.get())
 //            throw new IllegalStateException(
@@ -466,15 +472,19 @@ public class MailboxImpl implements PAMailbox, Runnable {
         return false;
     }
 
-    /** Called before running processXXXMessage(Message). */
+    /**
+     * Called before running processXXXMessage(Message).
+     */
     protected void beforeProcessMessage(final boolean request,
-            final Message message) {
+                                        final Message message) {
         // NOP
     }
 
-    /** Called after running processXXXMessage(Message). */
+    /**
+     * Called after running processXXXMessage(Message).
+     */
     protected void afterProcessMessage(final boolean request,
-            final Message message) {
+                                       final Message message) {
         // NOP
     }
 }

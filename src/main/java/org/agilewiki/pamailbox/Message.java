@@ -26,6 +26,7 @@ public class Message implements AutoCloseable {
 
     /**
      * Returns true when the response is to be sent to another mailbox factory.
+     *
      * @return True when the response is to be sent to another mailbox factory.
      */
     public boolean isForeign() {
