@@ -28,7 +28,7 @@ final class Caller implements MessageSource {
     }
 
     @Override
-    public boolean buffer(final Message message, final MessageSource target) {
+    public boolean buffer(final Message message, final PAMailbox target) {
         return false;
     }
 

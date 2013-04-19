@@ -17,7 +17,7 @@ public interface MessageSource {
      * @param target The MessageSource that should eventually receive this message
      * @return true, if buffered
      */
-    boolean buffer(final Message message, final MessageSource target);
+    boolean buffer(final Message message, final PAMailbox target);
 
     /** Adds messages to the queue. */
     void addUnbufferedMessages(final Queue<Message> messages) throws Exception;

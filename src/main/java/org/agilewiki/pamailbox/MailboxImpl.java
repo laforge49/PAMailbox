@@ -37,7 +37,7 @@ public class MailboxImpl implements PAMailbox, Runnable {
     /**
      * Send buffer
      */
-    private Map<MessageSource, ArrayDeque<Message>> sendBuffer;
+    private Map<PAMailbox, ArrayDeque<Message>> sendBuffer;
 
     private ExceptionHandler exceptionHandler;
     private Message currentMessage;
@@ -66,7 +66,21 @@ public class MailboxImpl implements PAMailbox, Runnable {
     }
 
     public void close() throws Exception {
-        flush();
+        if (sendBuffer == null)
+            return;
+        final Iterator<Entry<PAMailbox, ArrayDeque<Message>>> iter = sendBuffer
+                .entrySet().iterator();
+        while (iter.hasNext()) {
+            final Entry<PAMailbox, ArrayDeque<Message>> entry = iter
+                    .next();
+            final PAMailbox target = entry.getKey();
+            if (target.getMailboxFactory() != mailboxFactory) {
+                final ArrayDeque<Message> messages = entry.getValue();
+                iter.remove();
+                target.addUnbufferedMessages(messages);
+            } else
+                iter.remove();
+        }
     }
 
     /**
@@ -79,11 +93,11 @@ public class MailboxImpl implements PAMailbox, Runnable {
     public final boolean flush() throws Exception {
         boolean result = false;
         if (sendBuffer != null) {
-            final Iterator<Entry<MessageSource, ArrayDeque<Message>>> iter = sendBuffer
+            final Iterator<Entry<PAMailbox, ArrayDeque<Message>>> iter = sendBuffer
                     .entrySet().iterator();
             while (iter.hasNext()) {
                 result = true;
-                final Entry<MessageSource, ArrayDeque<Message>> entry = iter
+                final Entry<PAMailbox, ArrayDeque<Message>> entry = iter
                         .next();
                 final MessageSource target = entry.getKey();
                 final ArrayDeque<Message> messages = entry.getValue();
@@ -258,10 +272,10 @@ public class MailboxImpl implements PAMailbox, Runnable {
      * @return true, if buffered
      */
     @Override
-    public boolean buffer(final Message message, final MessageSource target) {
+    public boolean buffer(final Message message, final PAMailbox target) {
         ArrayDeque<Message> buffer;
         if (sendBuffer == null) {
-            sendBuffer = new IdentityHashMap<MessageSource, ArrayDeque<Message>>();
+            sendBuffer = new IdentityHashMap<PAMailbox, ArrayDeque<Message>>();
             buffer = null;
         } else {
             buffer = sendBuffer.get(target);
