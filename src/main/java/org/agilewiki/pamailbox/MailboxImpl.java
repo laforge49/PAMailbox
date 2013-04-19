@@ -380,11 +380,11 @@ public class MailboxImpl implements PAMailbox, Runnable {
                             @Override
                             public void processResponse(final Object response)
                                     throws Exception {
+                                if (message.isForeign())
+                                    mailboxFactory.removeAutoClosable(message);
                                 if (!message.isResponsePending())
                                     return;
                                 if (message.getResponseProcessor() != EventResponseProcessor.SINGLETON) {
-                                    if (message.isForeign())
-                                        mailboxFactory.removeAutoClosable(message);
                                     message.setResponse(response);
                                     message.getMessageSource()
                                             .incomingResponse(message,
