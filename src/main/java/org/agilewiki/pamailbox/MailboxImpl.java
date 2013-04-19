@@ -367,6 +367,8 @@ public class MailboxImpl implements PAMailbox, Runnable {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void processRequestMessage(final Message message) {
+        if (message.isForeign())
+            mailboxFactory.addAutoClosable(message);
         beforeProcessMessage(true, message);
         try {
             exceptionHandler = null; //NOPMD
@@ -381,6 +383,8 @@ public class MailboxImpl implements PAMailbox, Runnable {
                                 if (!message.isResponsePending())
                                     return;
                                 if (message.getResponseProcessor() != EventResponseProcessor.SINGLETON) {
+                                    if (message.isForeign())
+                                        mailboxFactory.removeAutoClosable(message);
                                     message.setResponse(response);
                                     message.getMessageSource()
                                             .incomingResponse(message,
@@ -394,6 +398,8 @@ public class MailboxImpl implements PAMailbox, Runnable {
                             }
                         });
             } catch (final Throwable t) {
+                if (message.isForeign())
+                    mailboxFactory.removeAutoClosable(message);
                 processThrowable(t);
             }
         } finally {
