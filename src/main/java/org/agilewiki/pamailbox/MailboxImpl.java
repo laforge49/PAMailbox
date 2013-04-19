@@ -57,11 +57,16 @@ public class MailboxImpl implements PAMailbox, Runnable, MessageSource {
         inbox = messageQueue;
         log = _log;
         initialBufferSize = _initialBufferSize;
+        factory.addAutoClosable(this);
     }
 
     @Override
     public final boolean isEmpty() {
         return !inbox.isNonEmpty();
+    }
+
+    public void close() throws Exception {
+        flush();
     }
 
     /**
