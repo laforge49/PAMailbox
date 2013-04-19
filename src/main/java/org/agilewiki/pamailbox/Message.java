@@ -1,9 +1,6 @@
 package org.agilewiki.pamailbox;
 
-import org.agilewiki.pactor.Actor;
-import org.agilewiki.pactor.ExceptionHandler;
-import org.agilewiki.pactor.ResponseProcessor;
-import org.agilewiki.pactor._Request;
+import org.agilewiki.pactor.*;
 
 /**
  * <p>
@@ -107,6 +104,10 @@ public class Message implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        //todo
+        if (!responsePending)
+            return;
+        responsePending = false;
+        response = new ServiceClosedException();
+        messageSource.incomingResponse(this, null);
     }
 }
