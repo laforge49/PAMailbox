@@ -274,6 +274,8 @@ public class MailboxImpl implements PAMailbox, Runnable {
      */
     @Override
     public boolean buffer(final Message message, final PAMailbox target) {
+        if (mailboxFactory.isClosing())
+            return false;
         ArrayDeque<Message> buffer;
         if (sendBuffer == null) {
             sendBuffer = new IdentityHashMap<PAMailbox, ArrayDeque<Message>>();
