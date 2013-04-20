@@ -391,14 +391,12 @@ public class MailboxImpl implements PAMailbox, Runnable {
             return;
         final Message message = currentMessage;
         final _Request<?, Actor> req = message.getRequest();
-        final ExceptionHandler handler = (req instanceof ExceptionHandler) ? ((ExceptionHandler) req)
-                : exceptionHandler;
-        if (handler != null) {
+        if (exceptionHandler != null) {
             try {
-                handler.processException(t);
+                exceptionHandler.processException(t);
             } catch (final Throwable u) {
                 log.error("Exception handler unable to process throwable "
-                        + handler.getClass().getName(), t);
+                        + exceptionHandler.getClass().getName(), t);
                 if (!(message.getResponseProcessor() instanceof EventResponseProcessor)) {
                     if (!message.isResponsePending())
                         return;
@@ -407,7 +405,7 @@ public class MailboxImpl implements PAMailbox, Runnable {
                             MailboxImpl.this);
                 } else {
                     log.error("Thrown by exception handler and uncaught "
-                            + handler.getClass().getName(), t);
+                            + exceptionHandler.getClass().getName(), t);
                 }
             }
         } else {
