@@ -8,11 +8,7 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.agilewiki.pactor.Actor;
-import org.agilewiki.pactor.ExceptionHandler;
-import org.agilewiki.pactor.Mailbox;
-import org.agilewiki.pactor.ResponseProcessor;
-import org.agilewiki.pactor._Request;
+import org.agilewiki.pactor.*;
 import org.slf4j.Logger;
 
 public class MailboxImpl implements PAMailbox, Runnable {
@@ -355,7 +351,7 @@ public class MailboxImpl implements PAMailbox, Runnable {
             final _Request<?, Actor> request = message.getRequest();
             try {
                 request.processRequest(message.getTargetActor(),
-                        new ResponseProcessor() {
+                        new Transport() {
                             @Override
                             public void processResponse(final Object response)
                                     throws Exception {
@@ -374,6 +370,16 @@ public class MailboxImpl implements PAMailbox, Runnable {
                                                 (Throwable) response);
                                     }
                                 }
+                            }
+
+                            @Override
+                            public MailboxFactory getMailboxFactory() {
+                                MessageSource ms = message.getMessageSource();
+                                if (ms == null)
+                                    return null;
+                                if (!(ms instanceof Mailbox))
+                                    return null;
+                                return ((Mailbox) ms).getMailboxFactory();
                             }
                         });
             } catch (final Throwable t) {
